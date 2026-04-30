@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Crônicas da Idade Média — O Despertar das Sombras</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&family=Press+Start+2P&display=swap');
+
+:root{--blood:#e62020;--magic-purp:#b967ff;--magic-blue:#00d4ff}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#060408}
+#root{width:100%;height:100vh;overflow:hidden}
+
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.95}}
+@keyframes dmgFloat{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}15%{opacity:1;transform:translate(-50%,-90%) scale(1.8)}80%{opacity:1;transform:translate(-50%,-155%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-200%) scale(.5)}}
+@keyframes choiceReveal{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes portalSpin{0%{transform:rotate(0deg) scale(0);opacity:0}50%{transform:rotate(180deg) scale(1.2);opacity:1}100%{transform:rotate(360deg) scale(1);opacity:0}}
+@keyframes laserShoot{0%{width:0;opacity:1}100%{width:350px;opacity:0}}
+@keyframes explosionBurst{0%{transform:scale(0.1);opacity:1}50%{transform:scale(1.5);opacity:1}100%{transform:scale(2);opacity:0}}
+@keyframes shadowPortalSpin{0%{transform:rotate(0deg) scale(0);opacity:0}50%{transform:rotate(-180deg) scale(1.2);opacity:1}100%{transform:rotate(-360deg) scale(1);opacity:0}}
+@keyframes shadowLaserShoot{0%{width:0;opacity:1}100%{width:450px;opacity:0}}
+@keyframes pinPulse{0%{opacity:.7;transform:scale(1)}70%{opacity:0;transform:scale(2.2)}100%{opacity:0}}
+
+.crt{pointer-events:none;position:absolute;inset:0;z-index:9998;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.08) 3px,rgba(0,0,0,.08) 4px);mix-blend-mode:multiply}
+.scanline{pointer-events:none;position:absolute;inset:0;z-index:9999;background:linear-gradient(180deg,rgba(255,255,255,.02) 0%,transparent 50%,rgba(0,0,0,.05) 100%);animation:float 8s ease-in-out infinite}
+.pxl{image-rendering:pixelated;image-rendering:crisp-edges}
+.btn{cursor:pointer;transition:all .2s;outline:none;border:none}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.btn:active:not(:disabled){transform:translateY(0)}
+.btn:disabled{filter:grayscale(1) brightness(.35);cursor:not-allowed}
+.choice-btn{position:relative;overflow:hidden}
+.choice-btn::before{content:'';position:absolute;inset:0;background:var(--kcol);opacity:0;transition:opacity .2s}
+.choice-btn:hover::before{opacity:.08}
+.choice-btn>div{position:relative;z-index:1}
+
+/* BATTLE LAYOUT */
+.battle-layout{display:grid;grid-template-columns:70% 30%;width:100%;height:100vh;overflow:hidden;background:#000;position:relative}
+.battle-canvas-area{position:relative;overflow:hidden;border-right:4px solid #3b3552}
+.cenario-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:brightness(.65)}
+.hud-panel{position:absolute;z-index:20;background:rgba(18,16,26,.9);border:2px solid #3b3552;border-radius:4px;padding:10px;display:flex;gap:10px;box-shadow:3px 3px 0 #000}
+.player-hud{top:20px;left:20px;width:340px}
+.enemy-hud{top:20px;right:20px;width:300px;justify-content:flex-end}
+.char-portrait{width:48px;height:48px;border:2px solid #3b3552;background:#000;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.portrait-img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.hp-mp-bars{flex:1;display:flex;flex-direction:column;gap:6px}
+.action-ground{position:absolute;bottom:0;width:100%;height:65%;display:flex;justify-content:space-between;align-items:flex-end;padding:0 8% 25px 8%;z-index:10}
+.char-sprite-box{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center}
+.sprite-img{height:260px;width:auto;max-width:300px;object-fit:contain;filter:drop-shadow(0px 10px 5px rgba(0,0,0,.8));z-index:5;transition:transform .2s}
+.enemy-img{transform:scaleX(-1);filter:drop-shadow(0px 0px 15px rgba(138,43,226,.6))}
+.char-name-label{position:absolute;bottom:-20px;font-size:7px;font-family:'Press Start 2P',monospace;text-shadow:2px 2px 0 #000;white-space:nowrap;z-index:10;background:rgba(0,0,0,.7);padding:4px 8px;color:#fff;border:1px solid #555}
+.right-ui-panel{display:flex;flex-direction:column;background:#0b050d;height:100%;position:relative;z-index:10}
+.magic-spell-portal{position:absolute;width:120px;height:120px;border-radius:50%;box-shadow:0 0 40px var(--magic-purp),inset 0 0 30px #4a00e0;border:5px dashed var(--magic-purp);z-index:0;top:10%;animation:portalSpin 1s ease-out forwards;mix-blend-mode:screen}
+.rainbow-laser{position:absolute;height:10px;left:90px;top:40%;background:linear-gradient(90deg,#ff007f,#7f00ff,var(--magic-blue),#fff);box-shadow:0 0 20px #fff,0 0 40px #7f00ff;z-index:10;transform-origin:left center;animation:laserShoot .6s ease-out forwards;animation-delay:.3s}
+.shadow-spell-portal{position:absolute;width:120px;height:120px;border-radius:50%;box-shadow:0 0 50px #3a0a5a,inset 0 0 30px #000;border:5px dashed #4a00e0;z-index:0;top:10%;animation:shadowPortalSpin 1s ease-out forwards}
+.shadow-laser{position:absolute;height:12px;right:90px;top:40%;background:linear-gradient(-90deg,#ff2200,#4a00e0,#000);box-shadow:0 0 20px #ff2200,0 0 40px #4a00e0;z-index:10;transform-origin:right center;animation:shadowLaserShoot .6s ease-out forwards;animation-delay:.3s}
+.blood-explosion{position:absolute;width:120px;height:120px;background:radial-gradient(circle,#fff 5%,var(--blood) 30%,#ff6600 60%,transparent 80%);top:10%;left:10%;z-index:15;mix-blend-mode:screen;animation:explosionBurst .6s ease-out forwards;animation-delay:.1s}
+
+/* MAP PINS */
+.map-pin{position:absolute;transform:translate(-50%,-100%);cursor:pointer;transition:all .2s;z-index:20}
+.map-pin:hover{transform:translate(-50%,-112%) scale(1.15)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef,useMemo,useCallback}=React;
+const SC=5;
+
+/* ══════════════════════════════════════
+   ERROR BOUNDARY
+══════════════════════════════════════ */
+class EB extends React.Component{
+  constructor(p){super(p);this.state={e:null}}
+  static getDerivedStateFromError(e){return{e:e.toString()}}
+  render(){
+    if(this.state.e)return(
+      <div style={{padding:40,color:"#ff4",fontFamily:"'Press Start 2P',monospace",background:"#060408",height:"100vh",display:"flex",flexDirection:"column",gap:20,justifyContent:"center",alignItems:"center"}}>
+        <div style={{fontSize:13,color:"#c9a84c"}}>ERRO NO TECIDO DA REALIDADE</div>
+        <div style={{fontSize:8,color:"#d4c8b8",background:"#0a0608",padding:24,border:"1px solid #3a0000",maxWidth:700,lineHeight:2,whiteSpace:"pre-wrap"}}>{this.state.e}</div>
+        <button onClick={()=>this.setState({e:null})} style={{marginTop:20,padding:"12px 24px",background:"#3a2010",border:"1px solid #c9a84c",color:"#c9a84c",cursor:"pointer",fontFamily:"'Press Start 2P',monospace",fontSize:9}}>TENTAR NOVAMENTE</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
+/* ══════════════════════════════════════
+   SPRITES
+══════════════════════════════════════ */
+const SPR={
+  warrior:(c="#cc4444")=>{
+    const s=c,h="#c0a070",b="#1a0a2a",m="#8a8a8a",l="#c0c0c0",g="#4a6a4a";
+    return[[7,0,b],[8,0,b],[6,1,b],[7,1,h],[8,1,h],[9,1,b],[6,2,h],[7,2,h],[8,2,h],[9,2,h],[6,3,h],[7,3,h],[8,3,h],[9,3,h],[5,4,b],[6,4,h],[7,4,h],[8,4,h],[9,4,h],[10,4,b],[5,5,s],[6,5,s],[7,5,s],[8,5,s],[9,5,s],[10,5,s],[5,6,s],[6,6,s],[7,6,s],[8,6,s],[9,6,s],[10,6,s],[5,7,s],[6,7,s],[7,7,s],[8,7,s],[9,7,s],[10,7,s],[5,8,s],[6,8,s],[7,8,s],[8,8,s],[9,8,s],[10,8,s],[5,9,g],[6,9,g],[7,9,g],[8,9,g],[9,9,g],[10,9,g],[5,10,g],[6,10,g],[7,10,g],[8,10,g],[9,10,g],[10,10,g],[5,11,b],[6,11,b],[9,11,b],[10,11,b],[5,12,b],[6,12,b],[9,12,b],[10,12,b],[4,6,m],[4,7,m],[4,8,m],[4,9,m],[4,10,m],[4,11,m],[4,12,m],[3,7,l],[3,8,l],[3,9,l],[3,10,l],[3,11,l],[3,12,l],[11,6,m],[11,7,m],[11,8,m],[11,9,m],[11,10,m],[11,11,m],[11,12,m],[12,7,l],[12,8,l],[12,9,l],[12,10,l],[12,11,l],[12,12,l]];
+  },
+  mage:(c="#8844ff")=>{
+    const s=c,h="#c0a070",b="#1a0a2a",m="#8a8a8a",l="#c0c0c0";
+    return[[7,0,b],[8,0,b],[6,1,b],[7,1,h],[8,1,h],[9,1,b],[6,2,h],[7,2,h],[8,2,h],[9,2,h],[6,3,h],[7,3,h],[8,3,h],[9,3,h],[5,4,b],[6,4,h],[7,4,h],[8,4,h],[9,4,h],[10,4,b],[5,5,s],[6,5,s],[7,5,s],[8,5,s],[9,5,s],[10,5,s],[5,6,s],[6,6,s],[7,6,s],[8,6,s],[9,6,s],[10,6,s],[5,7,s],[6,7,s],[7,7,s],[8,7,s],[9,7,s],[10,7,s],[5,8,s],[6,8,s],[7,8,s],[8,8,s],[9,8,s],[10,8,s],[5,9,s],[6,9,s],[7,9,s],[8,9,s],[9,9,s],[10,9,s],[5,10,s],[6,10,s],[7,10,s],[8,10,s],[9,10,s],[10,10,s],[5,11,b],[6,11,b],[9,11,b],[10,11,b],[5,12,b],[6,12,b],[9,12,b],[10,12,b],[4,6,m],[4,7,m],[4,8,m],[4,9,m],[4,10,m],[4,11,m],[4,12,m],[3,7,l],[3,8,l],[3,9,l],[3,10,l],[3,11,l],[3,12,l],[11,6,m],[11,7,m],[11,8,m],[11,9,m],[11,10,m],[11,11,m],[11,12,m],[12,7,l],[12,8,l],[12,9,l],[12,10,l],[12,11,l],[12,12,l]];
+  },
+  cleric:(c="#ffcc44")=>{
+    const s=c,h="#c0a070",b="#1a0a2a",m="#8a8a8a",l="#c0c0c0";
+    return[[7,0,b],[8,0,b],[6,1,b],[7,1,h],[8,1,h],[9,1,b],[6,2,h],[7,2,h],[8,2,h],[9,2,h],[6,3,h],[7,3,h],[8,3,h],[9,3,h],[5,4,b],[6,4,h],[7,4,h],[8,4,h],[9,4,h],[10,4,b],[5,5,s],[6,5,s],[7,5,s],[8,5,s],[9,5,s],[10,5,s],[5,6,s],[6,6,s],[7,6,s],[8,6,s],[9,6,s],[10,6,s],[5,7,s],[6,7,s],[7,7,s],[8,7,s],[9,7,s],[10,7,s],[5,8,s],[6,8,s],[7,8,s],[8,8,s],[9,8,s],[10,8,s],[5,9,s],[6,9,s],[7,9,s],[8,9,s],[9,9,s],[10,9,s],[5,10,s],[6,10,s],[7,10,s],[8,10,s],[9,10,s],[10,10,s],[5,11,b],[6,11,b],[9,11,b],[10,11,b],[5,12,b],[6,12,b],[9,12,b],[10,12,b],[4,6,m],[4,7,m],[4,8,m],[4,9,m],[4,10,m],[4,11,m],[4,12,m],[3,7,l],[3,8,l],[3,9,l],[3,10,l],[3,11,l],[3,12,l],[11,6,m],[11,7,m],[11,8,m],[11,9,m],[11,10,m],[11,11,m],[11,12,m],[12,7,l],[12,8,l],[12,9,l],[12,10,l],[12,11,l],[12,12,l]];
+  },
+  archer:(c="#44cc66")=>{
+    const s=c,h="#c0a070",b="#1a0a2a",m="#8a8a8a",l="#c0c0c0";
+    return[[7,0,b],[8,0,b],[6,1,b],[7,1,h],[8,1,h],[9,1,b],[6,2,h],[7,2,h],[8,2,h],[9,2,h],[6,3,h],[7,3,h],[8,3,h],[9,3,h],[5,4,b],[6,4,h],[7,4,h],[8,4,h],[9,4,h],[10,4,b],[5,5,s],[6,5,s],[7,5,s],[8,5,s],[9,5,s],[10,5,s],[5,6,s],[6,6,s],[7,6,s],[8,6,s],[9,6,s],[10,6,s],[5,7,s],[6,7,s],[7,7,s],[8,7,s],[9,7,s],[10,7,s],[5,8,s],[6,8,s],[7,8,s],[8,8,s],[9,8,s],[10,8,s],[5,9,s],[6,9,s],[7,9,s],[8,9,s],[9,9,s],[10,9,s],[5,10,s],[6,10,s],[7,10,s],[8,10,s],[9,10,s],[10,10,s],[5,11,b],[6,11,b],[9,11,b],[10,11,b],[5,12,b],[6,12,b],[9,12,b],[10,12,b],[4,6,m],[4,7,m],[4,8,m],[4,9,m],[4,10,m],[4,11,m],[4,12,m],[3,7,l],[3,8,l],[3,9,l],[3,10,l],[3,11,l],[3,12,l],[11,6,m],[11,7,m],[11,8,m],[11,9,m],[11,10,m],[11,11,m],[11,12,m],[12,7,l],[12,8,l],[12,9,l],[12,10,l],[12,11,l],[12,12,l]];
+  },
+  queen:(c="#c9a84c")=>{
+    const s=c,h="#c0a070",b="#1a0a2a",m="#8a8a8a",l="#c0c0c0";
+    return[[7,0,b],[8,0,b],[6,1,b],[7,1,h],[8,1,h],[9,1,b],[6,2,h],[7,2,h],[8,2,h],[9,2,h],[6,3,h],[7,3,h],[8,3,h],[9,3,h],[5,4,b],[6,4,h],[7,4,h],[8,4,h],[9,4,h],[10,4,b],[5,5,s],[6,5,s],[7,5,s],[8,5,s],[9,5,s],[10,5,s],[5,6,s],[6,6,s],[7,6,s],[8,6,s],[9,6,s],[10,6,s],[5,7,s],[6,7,s],[7,7,s],[8,7,s],[9,7,s],[10,7,s],[5,8,s],[6,8,s],[7,8,s],[8,8,s],[9,8,s],[10,8,s],[5,9,s],[6,9,s],[7,9,s],[8,9,s],[9,9,s],[10,9,s],[5,10,s],[6,10,s],[7,10,s],[8,10,s],[9,10,s],[10,10,s],[5,11,b],[6,11,b],[9,11,b],[10,11,b],[5,12,b],[6,12,b],[9,12,b],[10,12,b],[4,6,m],[4,7,m],[4,8,m],[4,9,m],[4,10,m],[4,11,m],[4,12,m],[3,7,l],[3,8,l],[3,9,l],[3,10,l],[3,11,l],[3,12,l],[11,6,m],[11,7,m],[11,8,m],[11,9,m],[11,10,m],[11,11,m],[11,12,m],[12,7,l],[12,8,l],[12,9,l],[12,10,l],[12,11,l],[12,12,l]];
+  },
+  shadow:(c="#1a0a2a")=>{
+    const s=c,b="#0a0408",e="#3a0a5a",r="#ff2200";
+    return[[6,0,b],[7,0,b],[8,0,b],[9,0,b],[5,1,b],[6,1,s],[7,1,s],[8,1,s],[9,1,s],[10,1,b],[5,2,s],[6,2,s],[7,2,s],[8,2,s],[9,2,s],[10,2,s],[5,3,s],[6,3,s],[7,3,s],[8,3,s],[9,3,s],[10,3,s],[5,4,s],[6,4,s],[7,4,s],[8,4,s],[9,4,s],[10,4,s],[5,5,s],[6,5,s],[7,5,s],[8,5,s],[9,5,s],[10,5,s],[5,6,s],[6,6,s],[7,6,s],[8,6,s],[9,6,s],[10,6,s],[5,7,s],[6,7,s],[7,7,s],[8,7,s],[9,7,s],[10,7,s],[5,8,s],[6,8,s],[7,8,s],[8,8,s],[9,8,s],[10,8,s],[5,9,s],[6,9,s],[7,9,s],[8,9,s],[9,9,s],[10,9,s],[5,10,s],[6,10,s],[7,10,s],[8,10,s],[9,10,s],[10,10,s],[5,11,b],[6,11,b],[9,11,b],[10,11,b],[5,12,b],[6,12,b],[9,12,b],[10,12,b],[7,2,r],[8,2,r],[7,3,r],[8,3,r],[7,5,e],[8,5,e]];
+  },
+  shadowWolf:()=>{
+    const b="#0a0408",d="#1a0a2a",m="#3a0a5a",l="#5a0a8a",g="#8a0aff",r="#ff2200";
+    return[[6,0,b],[7,0,b],[8,0,b],[9,0,b],[5,1,b],[6,1,d],[7,1,d],[8,1,d],[9,1,d],[10,1,b],[4,2,d],[5,2,m],[6,2,m],[7,2,m],[8,2,m],[9,2,m],[10,2,d],[11,2,d],[3,3,d],[4,3,l],[5,3,l],[6,3,l],[7,3,l],[8,3,l],[9,3,l],[10,3,l],[11,3,d],[12,3,d],[2,4,d],[3,4,m],[4,4,m],[5,4,m],[6,4,m],[7,4,m],[8,4,m],[9,4,m],[10,4,m],[11,4,m],[12,4,d],[13,4,d],[1,5,d],[2,5,l],[3,5,l],[4,5,l],[5,5,l],[6,5,l],[7,5,l],[8,5,l],[9,5,l],[10,5,l],[11,5,l],[12,5,l],[13,5,d],[14,5,d],[0,6,d],[1,6,m],[2,6,m],[3,6,m],[4,6,m],[5,6,m],[6,6,m],[7,6,m],[8,6,m],[9,6,m],[10,6,m],[11,6,m],[12,6,m],[13,6,m],[14,6,d],[15,6,d],[0,7,d],[1,7,l],[2,7,l],[3,7,l],[4,7,l],[5,7,l],[6,7,l],[7,7,l],[8,7,l],[9,7,l],[10,7,l],[11,7,l],[12,7,l],[13,7,l],[14,7,d],[15,7,d],[0,8,d],[1,8,m],[2,8,m],[3,8,m],[4,8,m],[5,8,m],[6,8,m],[7,8,m],[8,8,m],[9,8,m],[10,8,m],[11,8,m],[12,8,m],[13,8,m],[14,8,d],[15,8,d],[1,9,d],[2,9,l],[3,9,l],[4,9,l],[5,9,l],[6,9,l],[7,9,l],[8,9,l],[9,9,l],[10,9,l],[11,9,l],[12,9,l],[13,9,d],[14,9,d],[2,10,d],[3,10,m],[4,10,m],[5,10,m],[6,10,m],[7,10,m],[8,10,m],[9,10,m],[10,10,m],[11,10,m],[12,10,d],[13,10,d],[3,11,d],[4,11,l],[5,11,l],[6,11,l],[7,11,l],[8,11,l],[9,11,l],[10,11,l],[11,11,d],[12,11,d],[4,12,d],[5,12,m],[6,12,m],[7,12,m],[8,12,m],[9,12,m],[10,12,d],[11,12,d],[5,13,b],[6,13,d],[7,13,d],[8,13,d],[9,13,d],[10,13,b],[6,14,b],[7,14,b],[8,14,b],[9,14,b],[7,15,b],[8,15,b],[7,4,r],[8,4,r],[7,6,g],[8,6,g]];
+  },
+  slimeBoss:()=>{
+    const b="#1a0a2a",d="#3a0a5a",m="#5a0a8a",l="#8a0aff",g="#c000ff",r="#ff2200";
+    return[[6,0,b],[7,0,b],[8,0,b],[9,0,b],[5,1,b],[6,1,d],[7,1,d],[8,1,d],[9,1,d],[10,1,b],[4,2,d],[5,2,m],[6,2,m],[7,2,m],[8,2,m],[9,2,m],[10,2,d],[11,2,d],[3,3,d],[4,3,l],[5,3,l],[6,3,l],[7,3,l],[8,3,l],[9,3,l],[10,3,l],[11,3,d],[12,3,d],[2,4,d],[3,4,m],[4,4,m],[5,4,m],[6,4,m],[7,4,m],[8,4,m],[9,4,m],[10,4,m],[11,4,m],[12,4,d],[13,4,d],[1,5,d],[2,5,l],[3,5,l],[4,5,l],[5,5,l],[6,5,l],[7,5,l],[8,5,l],[9,5,l],[10,5,l],[11,5,l],[12,5,l],[13,5,d],[14,5,d],[0,6,d],[1,6,m],[2,6,m],[3,6,m],[4,6,m],[5,6,m],[6,6,m],[7,6,m],[8,6,m],[9,6,m],[10,6,m],[11,6,m],[12,6,m],[13,6,m],[14,6,d],[15,6,d],[0,7,d],[1,7,l],[2,7,l],[3,7,l],[4,7,l],[5,7,l],[6,7,l],[7,7,l],[8,7,l],[9,7,l],[10,7,l],[11,7,l],[12,7,l],[13,7,l],[14,7,d],[15,7,d],[7,4,r],[8,4,r],[7,6,g],[8,6,g]];
+  },
+  humanCorrupted:()=>{
+    const sk="#c0a070",b="#1a0a2a",p="#5a1a8a",r="#ff2200",d="#3a0a5a";
+    return[[6,0,b],[7,0,b],[8,0,b],[9,0,b],[5,1,b],[6,1,p],[7,1,p],[8,1,p],[9,1,p],[10,1,b],[5,2,p],[6,2,sk],[7,2,sk],[8,2,sk],[9,2,sk],[10,2,p],[6,3,r],[7,3,r],[8,3,sk],[9,3,r],[10,3,r],[6,4,sk],[7,4,r],[8,4,sk],[9,4,r],[10,4,sk],[6,5,sk],[7,5,sk],[8,5,sk],[9,5,sk],[4,6,b],[5,6,p],[6,6,p],[7,6,d],[8,6,d],[9,6,p],[10,6,p],[11,6,b],[4,7,p],[5,7,d],[6,7,d],[7,7,p],[8,7,p],[9,7,d],[10,7,d],[11,7,p],[5,8,p],[6,8,p],[7,8,d],[8,8,d],[9,8,p],[10,8,p],[5,9,b],[6,9,p],[7,9,p],[8,9,p],[9,9,p],[10,9,b],[6,6,r],[9,6,r],[6,9,r],[9,9,r],[5,10,d],[6,10,p],[7,10,p],[8,10,p],[9,10,p],[10,10,d],[5,11,b],[6,11,d],[9,11,d],[10,11,b],[5,12,b],[6,12,b],[9,12,b],[10,12,b]];
+  },
+  gameMaster:()=>{
+    const r="#3a2818",sk="#e0c090",wh="#f0f0f0",g="#c9a84c",p="#a78bfa";
+    return[[6,0,r],[7,0,r],[8,0,r],[9,0,r],[10,0,r],[5,1,r],[6,1,r],[7,1,r],[8,1,r],[9,1,r],[10,1,r],[11,1,r],[5,2,r],[6,2,r],[7,2,r],[8,2,r],[9,2,r],[10,2,r],[11,2,r],[6,3,sk],[7,3,sk],[8,3,sk],[9,3,sk],[6,4,sk],[7,4,g],[8,4,g],[9,4,sk],[6,5,sk],[7,5,sk],[8,5,sk],[9,5,sk],[4,6,wh],[5,6,wh],[6,6,wh],[7,6,r],[8,6,r],[9,6,wh],[10,6,wh],[11,6,wh],[4,7,wh],[5,7,wh],[6,7,g],[7,7,g],[8,7,g],[9,7,g],[10,7,wh],[11,7,wh],[4,8,r],[5,8,r],[6,8,r],[7,8,wh],[8,8,wh],[9,8,r],[10,8,r],[11,8,r],[4,9,r],[5,9,r],[6,9,r],[7,9,r],[8,9,r],[9,9,r],[10,9,r],[11,9,r],[2,6,g],[3,6,g],[2,7,"#8B6914"],[3,7,g],[2,8,g],[3,8,g],[2,5,p],[3,5,p],[13,4,p],[13,5,"#9060e0"],[13,6,"#7040c0"],[13,7,"#5020a0"],[12,3,p],[13,3,"#e0d0ff"],[14,3,p]];
+  },
+};
+
+/* ══════════════════════════════════════
+   SPRITE COMPONENT
+══════════════════════════════════════ */
+function Spr({data,scale=SC,flip=false,shadow=true,glowColor=null,style={}}){
+  const pixels=useMemo(()=>typeof data==="function"?data():data,[data]);
+  let maxX=0,maxY=0;
+  pixels.forEach(([x,y])=>{if(x>maxX)maxX=x;if(y>maxY)maxY=y;});
+  const W=(maxX+3)*scale,H=(maxY+3)*scale;
+  const ref=useRef(null);
+  useEffect(()=>{
+    const c=ref.current;if(!c)return;
+    c.width=W;c.height=H;
+    const ctx=c.getContext("2d");
+    ctx.clearRect(0,0,W,H);
+    ctx.imageSmoothingEnabled=false;
+    if(shadow){
+      const sg=ctx.createRadialGradient(W/2,H-scale*.3,0,W/2,H-scale*.3,W/2.2);
+      sg.addColorStop(0,"rgba(0,0,0,.55)");sg.addColorStop(.6,"rgba(0,0,0,.2)");sg.addColorStop(1,"transparent");
+      ctx.fillStyle=sg;ctx.beginPath();ctx.ellipse(W/2,H-scale*.4,W/2.2,scale*.7,0,0,Math.PI*2);ctx.fill();
+    }
+    if(glowColor){ctx.shadowColor=glowColor;ctx.shadowBlur=scale*2;}
+    pixels.forEach(([x,y,col])=>{
+      if(!col)return;
+      const px=(flip?(maxX-x):x)*scale,py=y*scale;
+      ctx.fillStyle=col;ctx.fillRect(px,py,scale,scale);
+    });
+    ctx.shadowBlur=0;
+  },[pixels,scale,flip,shadow,glowColor,W,H]);
+  return <canvas ref={ref} width={W} height={H} className="pxl" style={{imageRendering:"pixelated",...style}}/>;
+}
+
+/* ══════════════════════════════════════
+   CLASSES
+══════════════════════════════════════ */
+const elCols={fire:"#ff6600",ice:"#4ac8ff",dark:"#cc44ff",heal:"#44cc66",light:"#ffdd00",physical:"#dddddd"};
+
+const CLS={
+  warrior:{spr:SPR.warrior,icon:"⚔",label:"GUERREIRO",animAttack:"slashA",color:"#cc4444",
+    skills:[{name:"Golpe Brutal",el:"physical",icon:"💥",mp:0,dmgMult:1.0},{name:"Fúria de Aço",el:"fire",icon:"🔥",mp:20,dmgMult:1.5},{name:"Investida",el:"physical",icon:"🛡",mp:10,dmgMult:1.2}]},
+  mage:{spr:SPR.mage,icon:"🔮",label:"MAGO",animAttack:"castA",color:"#8844ff",
+    skills:[{name:"Bola de Fogo",el:"fire",icon:"🔥",mp:20,dmgMult:1.6},{name:"Gelo Negro",el:"ice",icon:"❄",mp:20,dmgMult:1.4},{name:"Trevas Absolutas",el:"dark",icon:"🌑",mp:25,dmgMult:1.8}]},
+  cleric:{spr:SPR.cleric,icon:"✨",label:"CLÉRIGO",animAttack:"castA",color:"#ffcc44",
+    skills:[{name:"Luz Sagrada",el:"light",icon:"✨",mp:20,dmgMult:1.4},{name:"Cura Divina",el:"heal",icon:"💚",mp:15,dmgMult:0},{name:"Purificação",el:"light",icon:"🕊",mp:22,dmgMult:1.3}]},
+  archer:{spr:SPR.archer,icon:"🏹",label:"CAÇADOR",animAttack:"bowA",color:"#44cc66",
+    skills:[{name:"Flecha de Gelo",el:"ice",icon:"❄",mp:20,dmgMult:1.5},{name:"Tiro Certeiro",el:"physical",icon:"🎯",mp:10,dmgMult:1.7},{name:"Chuva de Flechas",el:"physical",icon:"🌧",mp:18,dmgMult:1.3}]},
+  queen:{spr:SPR.queen,icon:"👑",label:"RAINHA",animAttack:"slashA",color:"#c9a84c",
+    skills:[{name:"Edicto de Sangue",el:"dark",icon:"🌀",mp:25,dmgMult:1.7},{name:"Golpe Real",el:"physical",icon:"⚔",mp:15,dmgMult:1.4},{name:"Sacrifício Real",el:"dark",icon:"💀",mp:30,dmgMult:2.0}]},
+};
+
+/* ══════════════════════════════════════
+   DADOS DOS REINOS + PINS DE MAPA
+══════════════════════════════════════ */
+const KD={
+  chrnus:{id:"chrnus",name:"Nova Chrnos",capital:"Fortaleza de Gelo",color:"#89b8d8",dark:"#000814",icon:"❄",
+    pin:{x:22,y:28},
+    lore_title:"O FRIO E A ESCURIDÃO",
+    lore_pages:[
+      {title:"O Sol que Não Nasceu",icon:"🌑",text:"Naquela manhã gélida, a Rainha Charlotte acordou esperando ver o brilho pálido da alvorada refletido na neve. Em vez disso, encontrou apenas o breu absoluto. O sol não havia nascido em Nova Chrnos."},
+      {title:"Os Totens Arcanos",icon:"🗿",text:"Caminhando dez quilômetros além das fronteiras, encontraram uma barreira de escuridão. O feitiço era mantido por cinco totens arcanos cravados em cada ponta do território. Fumaça espessa jorrou das esculturas, formando réplicas malignas de cada herói."},
+    ],
+    party:[
+      {id:"charlotte",name:"Rainha Charlotte",player:"Júlia",cls:"queen",hp:130,maxHp:130,mp:110,maxMp:110,atk:20,def:14,spd:10,color:"#4a9adf",photo:null},
+      {id:"noah",name:"Noah",player:"Gabriel A.",cls:"cleric",hp:120,maxHp:120,mp:90,maxMp:90,atk:18,def:16,spd:8,color:"#ffcc44",photo:null},
+      {id:"akin",name:"Akin",player:"Gabriel C.",cls:"archer",hp:125,maxHp:125,mp:70,maxMp:70,atk:26,def:14,spd:13,color:"#4a6a3a",photo:null},
+      {id:"goliath",name:"Goliath",player:"Luiz Fernando",cls:"warrior",hp:160,maxHp:160,mp:40,maxMp:40,atk:28,def:18,spd:7,color:"#8a3a3a",photo:null},
+      {id:"merissa",name:"Merissa",player:"Gabriel M.",cls:"mage",hp:115,maxHp:115,mp:120,maxMp:120,atk:24,def:12,spd:11,color:"#4a9a6a",photo:null},
+      {id:"makhalev",name:"Makhalev",player:"José Victor",cls:"warrior",hp:170,maxHp:170,mp:50,maxMp:50,atk:30,def:15,spd:9,color:"#b02020",photo:"makhalev-animado.gif"},
+    ],
+    enemies:[{uid:"e0",name:"Sombra das Trevas",spr:SPR.shadow("#1a3a6a"),hp:160,maxHp:160,atk:24,def:12,spd:11,scale:8,glowColor:"#4a9adf"}],
+    heroicKey:"todos_juntos",
+    choices:[
+      {id:"todos_juntos",text:"Enfrentar a própria Sombra cara a cara",detail:"A batalha psicológica só termina quando você vencer a si mesmo.",heroic:true},
+      {id:"charlotte_ordem",text:"Ordenar retirada estratégica e aguardar reforços",detail:"Prudente. Mas a cada hora, os totens drenam mais a luz do reino.",heroic:false},
+    ],
+    ending:{heroic:"O golpe cortou o silêncio. A sombra se desfez sendo sugada de volta para o totem. Nova Chrnos voltou a ver o sol.",bittersweet:"Os totens foram desativados com custo. A luz retornou, mas as cicatrizes permanecem.",dark:"A escuridão resistiu. Nova Chrnos permanece aprisionada em noite eterna."}
+  },
+  loorum:{id:"loorum",name:"Nova Loorum",capital:"Floresta dos Ancestrais",color:"#627e99",dark:"#001408",icon:"🌲",
+    pin:{x:52,y:32},
+    lore_title:"OS ESPECTROS DA FLORESTA",
+    lore_pages:[
+      {title:"A Rocha Flutuante",icon:"🪨",text:"No centro do reino, pairando sobre o solo sagrado da floresta, surgiu uma rocha flutuante que emanava uma luz rubra e doentia. Era um 'acúmulo de sacrifícios' — magia tão antiga que os grimórios desconheciam."},
+      {title:"A Batalha do Espírito",icon:"⚔",text:"Símbolos arcanos desenharam-se na terra como portais de onde começaram a emergir figuras. A magia negra da pedra estava usando as memórias e os arrependimentos dos heróis contra eles mesmos."},
+    ],
+    party:[
+      {id:"josefines",name:"Rei Josefines",player:"Lucas",cls:"warrior",hp:140,maxHp:140,mp:70,maxMp:70,atk:22,def:18,spd:9,color:"#3a8a5a",photo:null},
+      {id:"vigod",name:"Vigod",player:"Vitor",cls:"mage",hp:110,maxHp:110,mp:120,maxMp:120,atk:20,def:11,spd:7,color:"#4b5d9a",photo:null},
+      {id:"eloor",name:"Eloor",player:"Nicollas",cls:"warrior",hp:130,maxHp:130,mp:60,maxMp:60,atk:26,def:15,spd:10,color:"#6b8a4b",photo:null},
+    ],
+    enemies:[{uid:"e0",name:"Sombra do Passado",spr:SPR.shadow("#1a2a0a"),hp:140,maxHp:140,atk:22,def:14,spd:9,scale:8,glowColor:"#3a8a3a"}],
+    heroicKey:"vigod_pedra",
+    choices:[
+      {id:"vigod_pedra",text:"Analisar a pedra com sabedoria arcana antes de agir",detail:"Identificar o 'acúmulo de sacrifícios' pode revelar como dissolvê-la.",heroic:true},
+      {id:"josefines_ataca",text:"Atacar a pedra diretamente com a arma",detail:"Ação direta. Mas destruir artefatos mágicos sem entendê-los é perigoso.",heroic:false},
+    ],
+    ending:{heroic:"O segredo da pedra foi desvendado. A floresta respirou novamente.",bittersweet:"A pedra foi destruída, mas a floresta sofreu danos permanentes.",dark:"A pedra consumiu a vida da floresta. Nova Loorum foi engolida pela escuridão."}
+  },
+  magnos:{id:"magnos",name:"Magnos",capital:"Oásis do Sol",color:"#5a8c42",dark:"#140c00",icon:"⛰",
+    pin:{x:75,y:28},
+    lore_title:"A COBIÇA EM MAGNOS",
+    lore_pages:[
+      {title:"A Gosma Negra",icon:"🦠",text:"Os rios e cachoeiras de ouro líquido haviam sumido, substituídos por uma espessa e silenciosa gosma escura que corrompia as minas de Magnos."},
+      {title:"A Joia Pulsante",icon:"💎",text:"Incrustada nas paredes de pedra de uma antiga escavação, uma joia vermelha pulsava debilmente, alimentando a gosma e criando ilusões de cobiça em todos."},
+    ],
+    party:[
+      {id:"eclips",name:"Dr. Eclips",player:"João",cls:"mage",hp:120,maxHp:120,mp:110,maxMp:110,atk:18,def:12,spd:9,color:"#c9a84c",photo:null},
+      {id:"elisa",name:"Elisa",player:"Yasmin",cls:"archer",hp:100,maxHp:100,mp:80,maxMp:80,atk:24,def:10,spd:13,color:"#6a8a4a",photo:null},
+      {id:"malachi",name:"Malachi",player:"Matheus",cls:"warrior",hp:150,maxHp:150,mp:50,maxMp:50,atk:28,def:16,spd:8,color:"#8a6a4a",photo:null},
+    ],
+    enemies:[{uid:"e0",name:"Gosma Corrompida",spr:SPR.slimeBoss,hp:180,maxHp:180,atk:28,def:16,spd:8,scale:9,glowColor:"#aa0000"}],
+    heroicKey:"elisa_circulo",
+    choices:[
+      {id:"elisa_circulo",text:"Desenhar um círculo de proteção para desestabilizar a joia",detail:"A joia se alimenta da cobiça. Um círculo pode desestabilizá-la.",heroic:true},
+      {id:"malachi_remove",text:"Tentar remover a joia com força bruta",detail:"A joia repele quem não tem domínio mágico.",heroic:false},
+    ],
+    ending:{heroic:"O círculo desestabilizou a joia. Magnos foi salva. A maior força é a inteligência.",bittersweet:"A gosma foi contida, mas a joia deixou uma cicatriz permanente na montanha.",dark:"A gosma engoliu as minas. Magnos foi consumido pela cobiça."}
+  },
+  zandar:{id:"zandar",name:"Zandar",capital:"Cidadela da Colheita",color:"#8e7943",dark:"#101408",icon:"🌾",
+    pin:{x:47,y:72},
+    lore_title:"A COLHEITA AMARGA",
+    lore_pages:[
+      {title:"A Praga Silenciosa",icon:"🌾",text:"A colheita de Zandar adoeceu de um dia para o outro. Um falso Comerciante ofereceu uma poção milagrosa que envenena a mente dos líderes, mergulhando-os em ilusões de prosperidade."},
+      {title:"A Verdade Revelada",icon:"🔍",text:"Ao ser desmascarado, a ilusão do mercador se desfez. Ele era um Emissário das Sombras que usava ilusões e teletransporte para confundir os heróis."},
+    ],
+    party:[
+      {id:"aiko",name:"Rainha Aiko",player:"Vitória",cls:"queen",hp:120,maxHp:120,mp:80,maxMp:80,atk:18,def:14,spd:10,color:"#c9a84c",photo:null},
+      {id:"roronoa",name:"Roronoa",player:"Agatha V.",cls:"warrior",hp:140,maxHp:140,mp:50,maxMp:50,atk:26,def:18,spd:9,color:"#5a8a5a",photo:null},
+      {id:"gabsep",name:"Gabsep",player:"Gabrielle",cls:"cleric",hp:90,maxHp:90,mp:110,maxMp:110,atk:14,def:12,spd:8,color:"#8a7030",photo:null},
+    ],
+    enemies:[{uid:"e0",name:"Emissário das Sombras",spr:SPR.humanCorrupted,hp:160,maxHp:160,atk:26,def:12,spd:11,scale:9,glowColor:"#8800ff"}],
+    heroicKey:"silvaxx_pedra",
+    choices:[
+      {id:"silvaxx_pedra",text:"Expor a pedra vermelha do comerciante",detail:"Revelar a fonte do mal enfraquece o feiticeiro.",heroic:true},
+      {id:"roronoa_subjuga",text:"Subjugar o comerciante com força bruta",detail:"Ataque direto. Mas o emissário usa teletransporte.",heroic:false},
+    ],
+    ending:{heroic:"A pedra foi exposta. Zandar despertou mais sábia: respostas fáceis são o veneno mais letal.",bittersweet:"O emissário foi derrotado, mas a colheita foi parcialmente perdida.",dark:"O comerciante escapou. A praga se espalhou. Zandar não alimentará Ghanor neste inverno."}
+  },
+  prysma:{id:"prysma",name:"Prysma",capital:"Porto de Ferro",color:"#d9882a",dark:"#0a0014",icon:"⚓",
+    pin:{x:22,y:57},
+    lore_title:"A NÉVOA SOBRE O PORTO",
+    lore_pages:[
+      {title:"A Névoa",icon:"☁",text:"Durante a madrugada, uma névoa espessa e antinatural cobriu o mercado. Daquela fumaça, emergiram cães colossais feitos de puro breu que drenaram a luz da Rainha."},
+      {title:"O Lobo de Fumaça",icon:"🐺",text:"Nos limites da cidade surgiu um lobo gigantesco encapuzado por fumaça negra que devorava a luz. Sombras não podem ser cortadas apenas por espadas físicas — a purificação mágica é a única saída."},
+    ],
+    party:[
+      {id:"marcelo",name:"Rei Marcelo",player:"Gerlandier",cls:"cleric",hp:130,maxHp:130,mp:90,maxMp:90,atk:22,def:16,spd:9,color:"#9a5adf",photo:null},
+      {id:"feli",name:"Feli",player:"Agatha",cls:"mage",hp:110,maxHp:110,mp:100,maxMp:100,atk:20,def:13,spd:10,color:"#4b5d8a",photo:null},
+      {id:"dean",name:"General Dean",player:"Luís",cls:"warrior",hp:150,maxHp:150,mp:40,maxMp:40,atk:30,def:20,spd:8,color:"#6b7a6b",photo:null},
+    ],
+    enemies:[{uid:"e0",name:"Lobo de Fumaça Negra",spr:SPR.shadowWolf,hp:220,maxHp:220,atk:30,def:16,spd:12,scale:10,glowColor:"#ff0000"}],
+    heroicKey:"feli_cajado",
+    choices:[
+      {id:"feli_cajado",text:"Canalizar magia purificadora contra a fumaça negra",detail:"A magia purifica o que o aço não pode.",heroic:true},
+      {id:"dean_vanguarda",text:"Marchar com a vanguarda armada para dentro da névoa",detail:"Ataques físicos puros podem atravessar a criatura como vento.",heroic:false},
+    ],
+    ending:{heroic:"A fumaça foi purificada. O Porto de Ferro compreendeu que a maior força não vem apenas do aço.",bittersweet:"O Lobo foi derrotado com muito custo e baixas.",dark:"O Lobo engoliu as esperanças. As tempestades sombrias destroem os navios de Prysma."}
+  },
+  erebor:{id:"erebor",name:"Erebor — Capital",capital:"Trono de Ghanor",color:"#c9a84c",dark:"#100800",icon:"👑",
+    pin:{x:72,y:68},
+    lore_title:"O EGO TOMA FORMA",
+    lore_pages:[
+      {title:"Cinco Crises",icon:"🗺",text:"Cinco reinos enfrentaram suas crises. Mas o Ego — a encarnação de todo orgulho, ganância e ira dos governantes de Ghanor — nunca foi realmente derrotado. Ele estava esperando que todos chegassem até ele."},
+      {title:"A Espera Final",icon:"👁",text:"No centro do salão em ruínas do trono de Erebor, uma figura feita de todos os erros que cada um cometeu olha para você: 'Vocês vieram até mim. Como se isso mudasse alguma coisa.'"},
+    ],
+    party:[
+      {id:"aiko_g",name:"Rainha Aiko",player:"Vitória",cls:"queen",hp:150,maxHp:150,mp:100,maxMp:100,atk:22,def:16,spd:10,color:"#c9a84c",photo:null},
+      {id:"marcelo_g",name:"Rei Marcelo",player:"Gerlandier",cls:"cleric",hp:140,maxHp:140,mp:100,maxMp:100,atk:20,def:16,spd:9,color:"#9a5adf",photo:null},
+      {id:"makhalev_g",name:"Makhalev",player:"José Victor",cls:"warrior",hp:170,maxHp:170,mp:50,maxMp:50,atk:30,def:15,spd:9,color:"#b02020",photo:"makhalev-animado.gif"},
+    ],
+    enemies:[{uid:"e0",name:"O Ego Absoluto",spr:SPR.shadow("#550000"),hp:300,maxHp:300,atk:32,def:18,spd:9,scale:11,glowColor:"#ff0000"}],
+    heroicKey:"confessar_erros",
+    choices:[
+      {id:"confessar_erros",text:"Confessar os erros — a verdade como arma",detail:"O Ego se alimenta de orgulho. Admitir erros enfraquece o que o alimenta.",heroic:true},
+      {id:"ataque_unificado",text:"Atacar com toda a força sem hesitar",detail:"Força bruta absoluta.",heroic:false},
+    ],
+    ending:{heroic:"O Ego caiu. Ao cair, sussurrou o nome de cada erro. A verdade purificou Ghanor.",bittersweet:"O Ego foi contido — não destruído. Ele agora é uma cicatriz permanente.",dark:"O Ego devorou Erebor. A Capital de Ghanor caiu em silêncio eterno."}
+  },
+};
+
+/* ══════════════════════════════════════
+   AI NARRATOR
+══════════════════════════════════════ */
+async function callAI(prompt,fallback){
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:300,system:"Você é o Mestre épico de um RPG de fantasia sombria medieval. Tom épico e sombrio. MÁXIMO 2 frases curtas. Português brasileiro. Comece DIRETO sem palavras introdutórias.",messages:[{role:"user",content:prompt}]})});
+    if(!r.ok)throw new Error();
+    const d=await r.json();
+    const tx=d.content?.find(b=>b.type==="text")?.text?.trim();
+    if(!tx||tx.length<4)throw new Error();
+    return tx;
+  }catch{return fallback||"O peso das sombras recai sobre o reino."}
+}
+
+/* ══════════════════════════════════════
+   PARTICLE SYSTEM
+══════════════════════════════════════ */
+const ECONF={
+  fire:{colors:["#ff6600","#ff4400","#ffcc00","#ff8800"],gravity:-.4,spread:3,count:30,size:[3,8],life:[280,500],glow:true},
+  ice:{colors:["#a8d8f0","#00e5ff","#c8f0ff","#4ac8ff"],gravity:.06,spread:2,count:24,size:[2,6],life:[240,420],glow:false},
+  dark:{colors:["#6a0dad","#8b00ff","#cc00ff","#4a0080"],gravity:-.2,spread:3,count:34,size:[3,9],life:[300,540],glow:true},
+  heal:{colors:["#44ff88","#00ff44","#88ffaa","#00cc44"],gravity:-.5,spread:2,count:22,size:[3,7],life:[260,400],glow:true},
+  light:{colors:["#ffdd00","#fff8aa","#ffcc44","#fff"],gravity:-.5,spread:2,count:24,size:[3,7],life:[240,380],glow:true},
+  physical:{colors:["#ffffff","#ffeecc","#dddddd"],gravity:.3,spread:3,count:18,size:[2,5],life:[160,300],glow:false},
+};
+
+function hexToRgba(hex,a){
+  if(!hex||!hex.startsWith("#"))return`rgba(100,100,100,${a})`;
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return`rgba(${r},${g},${b},${a})`;
+}
+
+function createProjectile(x0,y0,x1,y1,el){
+  const cfg=ECONF[el]||ECONF.physical;
+  const angle=Math.atan2(y1-y0,x1-x0);
+  const born=performance.now();
+  const particles=[];
+  for(let i=0;i<cfg.count;i++){
+    const t=i/cfg.count;
+    particles.push({x0:x0+(-25+Math.random()*50)*cfg.spread*.3,y0:y0+(-15+Math.random()*30)*cfg.spread*.3,x1:x1+(-12+Math.random()*24),y1:y1+(-12+Math.random()*24),born:born+t*380,life:cfg.life[0]+Math.random()*(cfg.life[1]-cfg.life[0]),size:cfg.size[0]+Math.random()*(cfg.size[1]-cfg.size[0]),color:cfg.colors[Math.floor(Math.random()*cfg.colors.length)],gravity:cfg.gravity*(-.5+Math.random()*2),glow:cfg.glow&&Math.random()>.4,alpha:.7+Math.random()*.3,phase:Math.random()*Math.PI*2,angle});
+  }
+  return{id:Math.random(),el,x1,y1,particles,born,dur:860};
+}
+
+function PartCanvas({projectiles}){
+  const ref=useRef(null);
+  const sRef=useRef({projectiles:[],raf:null});
+  useEffect(()=>{sRef.current.projectiles=projectiles;},[projectiles]);
+  useEffect(()=>{
+    const canvas=ref.current;if(!canvas)return;
+    const ctx=canvas.getContext("2d");
+    function resize(){canvas.width=canvas.offsetWidth||window.innerWidth;canvas.height=canvas.offsetHeight||window.innerHeight;}
+    resize();window.addEventListener("resize",resize);
+    function frame(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const now=performance.now();
+      sRef.current.projectiles.forEach(p=>{
+        p.particles.forEach(pt=>{
+          const life=now-pt.born;
+          if(life<0||life>pt.life)return;
+          const prog=life/pt.life;
+          const x=pt.x0+(pt.x1-pt.x0)*prog;
+          const y=pt.y0+(pt.y1-pt.y0)*prog+pt.gravity*prog*(1-prog)*200;
+          const alpha=pt.alpha*(1-prog);
+          ctx.fillStyle=hexToRgba(pt.color,alpha);
+          if(pt.glow){ctx.shadowColor=pt.color;ctx.shadowBlur=pt.size*2;}
+          ctx.fillRect(x,y,pt.size,pt.size);
+          ctx.shadowBlur=0;
+        });
+      });
+      sRef.current.raf=requestAnimationFrame(frame);
+    }
+    frame();
+    return()=>{window.removeEventListener("resize",resize);if(sRef.current.raf)cancelAnimationFrame(sRef.current.raf);};
+  },[]);
+  return<canvas ref={ref} style={{position:"absolute",inset:0,zIndex:300,pointerEvents:"none",width:"100%",height:"100%"}}/>;
+}
+
+/* ══════════════════════════════════════
+   UI COMPONENTS
+══════════════════════════════════════ */
+function Bar({cur,max,color,h=8,nums=false}){
+  const pct=Math.max(0,Math.min(1,cur/max));
+  const col=pct>.5?color:pct>.25?"#aa6600":"#cc1010";
+  return(
+    <div style={{position:"relative",width:"100%"}}>
+      <div style={{background:"#0a0408",border:"1px solid #1a1028",height:h,width:"100%"}}>
+        <div style={{width:`${pct*100}%`,height:"100%",background:col,transition:"width .3s ease",boxShadow:`0 0 5px ${col}88`}}/>
+      </div>
+      {nums&&<div style={{position:"absolute",right:2,top:0,fontFamily:"'Press Start 2P',monospace",fontSize:5,color:"#5a4a6a",lineHeight:`${h}px`}}>{cur}/{max}</div>}
+    </div>
+  );
+}
+
+function D20({val,rolling}){
+  return(
+    <div style={{width:42,height:42,position:"relative",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <svg width="42" height="42" viewBox="0 0 42 42" style={{position:"absolute",animation:rolling?"pulse .4s infinite":undefined}}>
+        <polygon points="21,2 40,15 40,31 21,40 2,31 2,15" fill="rgba(6,4,8,.95)" stroke={rolling?"#ff6600":"#c9a84c"} strokeWidth="1.5"/>
+        <polygon points="21,2 40,15 21,21" fill="rgba(201,168,76,.06)"/>
+        <polygon points="2,15 21,21 21,40" fill="rgba(201,168,76,.04)"/>
+        <polygon points="40,31 21,21 21,40" fill="rgba(201,168,76,.08)"/>
+      </svg>
+      <span style={{fontFamily:"'Press Start 2P',monospace",fontSize:val>=10?8:10,color:rolling?"#ff6600":val>=18?"#ff6600":val<=3?"#4488ff":"#c9a84c",position:"relative",zIndex:1,animation:rolling?"blink .3s infinite":undefined}}>
+        {rolling?"?":val||"20"}
+      </span>
+    </div>
+  );
+}
+
+function FloatDmg({val,type,x,y}){
+  const cols={damage:"#ff4444",crit:"#ff8800",heal:"#44ff88",miss:"#4488ff"};
+  const col=cols[type]||"#fff";
+  const txt=type==="miss"?"MISS":type==="crit"?`${val}!`:type==="heal"?`+${val}`:`-${val}`;
+  return(
+    <div style={{position:"fixed",left:x,top:y,transform:"translate(-50%,-50%)",fontFamily:"'Press Start 2P',monospace",fontSize:type==="crit"?12:9,color:col,textShadow:`0 0 8px ${col}`,pointerEvents:"none",zIndex:9000,animation:"dmgFloat 1.5s ease-out forwards",whiteSpace:"nowrap"}}>
+      {txt}
+    </div>
+  );
+}
+
+function DlgBox({text,onNext,loading=false,kColor="#c9a84c"}){
+  const[shown,setShown]=useState("");
+  const[done,setDone]=useState(false);
+  const tmr=useRef(null);const idx=useRef(0);
+  useEffect(()=>{
+    setShown("");setDone(false);idx.current=0;
+    if(tmr.current)clearInterval(tmr.current);
+    if(!text||loading)return;
+    tmr.current=setInterval(()=>{idx.current+=2;setShown(text.slice(0,idx.current));if(idx.current>=text.length){clearInterval(tmr.current);setDone(true);}},8);
+    return()=>clearInterval(tmr.current);
+  },[text,loading]);
+  const skip=()=>{if(tmr.current)clearInterval(tmr.current);setShown(text);setDone(true);};
+  return(
+    <div onClick={done?onNext:skip} style={{background:"rgba(6,4,8,.97)",border:`2px solid ${kColor}`,padding:"12px 16px",cursor:"pointer",boxShadow:`0 8px 32px rgba(0,0,0,.9)`,animation:"fadeUp .3s ease"}}>
+      <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
+        <div style={{flexShrink:0}}><Spr data={SPR.gameMaster()} scale={3} shadow={false}/></div>
+        <div style={{flex:1}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,borderBottom:`1px solid ${kColor}33`,paddingBottom:5}}>
+            <span style={{fontFamily:"'Press Start 2P',monospace",fontSize:6,color:kColor,letterSpacing:2}}>O MESTRE</span>
+            <span style={{fontSize:14}}>🎲</span>
+          </div>
+          {loading
+            ?<div style={{fontFamily:"'IM Fell English',serif",fontSize:16,color:"#5a4a6a",fontStyle:"italic",animation:"breathe 1s infinite",minHeight:36}}>O Mestre consulta as crônicas...</div>
+            :<div style={{fontFamily:"'IM Fell English',serif",fontSize:17,color:"#e8dcc8",lineHeight:1.7,minHeight:36}}>{shown}{!done&&<span style={{animation:"blink .5s step-start infinite"}}>█</span>}</div>}
+          {done&&!loading&&<div style={{textAlign:"right",marginTop:5,fontFamily:"'Press Start 2P',monospace",fontSize:5,color:"#5a4a6a",animation:"breathe 1.5s infinite"}}>▶ CLIQUE PARA CONTINUAR</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   TITLE SCREEN
+══════════════════════════════════════ */
+function TitleScreen({onStart}){
+  const[phase,setPhase]=useState(0);
+  const stars=useMemo(()=>[...Array(110)].map((_,i)=>({x:(i*137+23)%100,y:(i*79+11)%90,s:.2+(i%4)*.5,d:2+(i%5)})),[]);
+  useEffect(()=>{
+    const t1=setTimeout(()=>setPhase(1),400);
+    const t2=setTimeout(()=>setPhase(2),1200);
+    const t3=setTimeout(()=>setPhase(3),2200);
+    return()=>{clearTimeout(t1);clearTimeout(t2);clearTimeout(t3);};
+  },[]);
+  return(
+    <div style={{width:"100%",height:"100vh",background:"radial-gradient(ellipse at 50% 30%,#0f0414 0%,#060408 60%,#000 100%)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden"}}>
+      <div className="crt"/><div className="scanline"/>
+      <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}>
+        {stars.map((s,i)=><circle key={i} cx={`${s.x}%`} cy={`${s.y}%`} r={s.s} fill="#fff" opacity={.14+(i%5)*.1} style={{animation:`twinkle ${s.d}s ease-in-out infinite`,animationDelay:`${i*.08}s`}}/>)}
+      </svg>
+      <div style={{position:"relative",zIndex:10,textAlign:"center",padding:"0 40px"}}>
+        <div style={{opacity:phase>=1?1:0,transition:"opacity 1s",fontFamily:"'Press Start 2P',monospace",fontSize:7,color:"#5a4a6a",letterSpacing:6,marginBottom:14}}>✦ UMA AVENTURA EM ✦</div>
+        <div style={{opacity:phase>=2?1:0,transition:"opacity 1.2s",transform:phase>=2?"none":"translateY(20px)"}}>
+          <div style={{fontFamily:"'Cinzel Decorative',serif",fontSize:"clamp(13px,1.8vw,19px)",color:"#8a7a5a",letterSpacing:6,marginBottom:6}}>CRÔNICAS DA IDADE MÉDIA</div>
+          <div style={{fontFamily:"'Cinzel Decorative',serif",fontSize:"clamp(22px,3.8vw,40px)",color:"#c9a84c",letterSpacing:5,textShadow:"0 0 40px rgba(201,168,76,.6)",lineHeight:1.2,marginBottom:5}}>O DESPERTAR</div>
+          <div style={{fontFamily:"'Cinzel Decorative',serif",fontSize:"clamp(16px,2.8vw,26px)",color:"#c9a84c",letterSpacing:9,textShadow:"0 0 30px rgba(201,168,76,.4)"}}>DAS SOMBRAS</div>
+        </div>
+        <div style={{opacity:phase>=3?1:0,transition:"opacity 1s",marginTop:30}}>
+          <div style={{width:280,height:1,background:"linear-gradient(90deg,transparent,#c9a84c,transparent)",margin:"0 auto 20px"}}/>
+          <div style={{fontFamily:"'IM Fell English',serif",fontSize:15,color:"#5a4a6a",fontStyle:"italic",lineHeight:1.8,marginBottom:26,maxWidth:480,margin:"0 auto 26px"}}>"O ego irá matar vocês."</div>
+          <div style={{display:"flex",gap:16,justifyContent:"center",marginBottom:28,alignItems:"flex-end"}}>
+            {["queen","warrior","mage","cleric","archer"].map((cls,i)=>(
+              <div key={i} style={{animation:`float ${2.2+i*.3}s ease-in-out infinite`,animationDelay:`${i*.28}s`,filter:"drop-shadow(0 6px 14px rgba(0,0,0,.9))"}}>
+                <Spr data={CLS[cls].spr(CLS[cls].color)} scale={4}/>
+              </div>
+            ))}
+          </div>
+          <button onClick={onStart} className="btn" style={{fontFamily:"'Cinzel',serif",fontSize:16,padding:"12px 28px",background:"#3a0000",border:"2px solid #7a1010",color:"#ff4444",cursor:"pointer",letterSpacing:3,boxShadow:"0 8px 0 #050204",animation:"pulse 2s infinite"}}>
+            INICIAR JOGO
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   MAP SCREEN — PINS
+══════════════════════════════════════ */
+function MapScreen({scores,heroicScores,onSelect,onEnding}){
+  const[hover,setHover]=useState(null);
+  const[mapLoaded,setMapLoaded]=useState(false);
+  const SIDE=["chrnus","loorum","zandar","magnos","prysma"];
+  const allSide=SIDE.every(k=>scores[k]!==undefined);
+
+  return(
+    <div style={{width:"100%",height:"100vh",background:"#030204",position:"relative",overflow:"hidden"}}>
+      <div className="crt"/>
+      {/* Cabeçalho */}
+      <div style={{position:"absolute",top:0,left:0,right:0,zIndex:30,background:"linear-gradient(180deg,rgba(3,2,4,.97) 0%,transparent 100%)",padding:"14px 32px",textAlign:"center",pointerEvents:"none"}}>
+        <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:7,color:"#5a4a6a",letterSpacing:5,marginBottom:4}}>O CONTINENTE DE</div>
+        <div style={{fontFamily:"'Cinzel Decorative',serif",fontSize:22,color:"#c9a84c",letterSpacing:8,textShadow:"0 0 30px rgba(201,168,76,.5)"}}>HEIDENGROUND</div>
+        <div style={{fontFamily:"'IM Fell English',serif",fontSize:12,color:"#5a4a6a",marginTop:3,fontStyle:"italic"}}>
+          {allSide?"✦ Todos os reinos explorados — Erebor aguarda ✦":"Clique em um pin para explorar o reino"}
+        </div>
+      </div>
+
+      {/* Imagem do mapa */}
+      <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#030204"}}>
+        <img src="Mapa.jpg" alt="Mapa" onLoad={()=>setMapLoaded(true)} onError={()=>setMapLoaded(true)}
+          style={{width:"min(100vw,100vh)",height:"min(100vw,100vh)",objectFit:"contain",filter:"brightness(.8) contrast(1.05)",opacity:mapLoaded?1:.2,transition:"opacity .8s",position:"relative",zIndex:1}}/>
+      </div>
+      <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 50%,transparent 45%,rgba(3,2,4,.55) 100%)",pointerEvents:"none",zIndex:2}}/>
+
+      {/* PINS — posicionados dentro de um wrapper que cobre a mesma área do mapa */}
+      <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:20}}>
+      <div style={{position:"relative",width:"min(100vw,100vh)",height:"min(100vw,100vh)",flexShrink:0}}>
+      {Object.entries(KD).map(([kid,k])=>{
+        const done=scores[kid]!==undefined;
+        const heroic=heroicScores[kid]===true;
+        const locked=kid==="erebor"&&!allSide;
+        const isHov=hover===kid;
+        const col=locked?"#5a3a5a":k.color;
+
+        return(
+          <div key={kid} className="map-pin"
+            style={{left:`${k.pin.x}%`,top:`${k.pin.y}%`,filter:locked?"grayscale(1) brightness(.3)":isHov?`drop-shadow(0 0 14px ${col})`:"none",zIndex:isHov?25:20,pointerEvents:"auto"}}
+            onMouseEnter={()=>setHover(kid)}
+            onMouseLeave={()=>setHover(null)}
+            onClick={()=>!locked&&onSelect(kid)}>
+
+            {/* Corpo SVG do pin */}
+            <svg width="34" height="42" viewBox="0 0 34 42" style={{display:"block",cursor:locked?"not-allowed":"pointer"}}>
+              <ellipse cx="17" cy="40" rx="7" ry="2" fill="rgba(0,0,0,.5)"/>
+              <path d="M17,0 C8.2,0 1,7.2 1,16 C1,27 17,42 17,42 C17,42 33,27 33,16 C33,7.2 25.8,0 17,0 Z"
+                fill={kid==="erebor"?(done?"#2a0000":"#3a0000"):(done?(heroic?"#2a2000":"#100808"):col)}
+                stroke={kid==="erebor"?"#ff2200":col} strokeWidth={isHov?2:1.5}/>
+              <circle cx="17" cy="16" r="9"
+                fill={done?(heroic?"#c9a84c22":col+"22"):col+"33"}
+                stroke={col} strokeWidth=".8"/>
+              <text x="17" y="20" textAnchor="middle" fontSize="10" fill={done?(heroic?"#c9a84c":col):col+"ee"} style={{fontFamily:"serif"}}>
+                {kid==="erebor"?(locked?"🔒":"👁"):locked?"🔒":heroic?"⭐":done?"✓":k.icon}
+              </text>
+              <path d="M11,6 Q17,2 23,6" fill="none" stroke="rgba(255,255,255,.25)" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+
+            {/* Anel de pulso para não completados */}
+            {!done&&!locked&&(
+              <div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:34,height:34,pointerEvents:"none"}}>
+                <div style={{position:"absolute",inset:-8,borderRadius:"50%",border:`2px solid ${col}`,animation:"pinPulse 2s ease-out infinite",opacity:.5,pointerEvents:"none"}}/>
+              </div>
+            )}
+
+            {/* Label */}
+            <div style={{position:"absolute",top:44,left:"50%",transform:"translateX(-50%)",fontFamily:"'Press Start 2P',monospace",fontSize:5,color:locked?"#4a2a4a":done?(heroic?"#c9a84c":col):col,whiteSpace:"nowrap",background:"rgba(3,2,4,.85)",padding:"2px 5px",border:`1px solid ${col}44`,opacity:isHov?1:.75,transition:"opacity .2s",pointerEvents:"none"}}>
+              {k.name.split(" ").pop().slice(0,8).toUpperCase()}
+            </div>
+
+            {/* Tooltip */}
+            {isHov&&(
+              <div style={{position:"absolute",bottom:50,left:"50%",transform:"translateX(-50%)",background:"rgba(6,4,8,.99)",border:`2px solid ${col}`,padding:"10px 14px",minWidth:190,zIndex:50,animation:"fadeUp .15s ease",boxShadow:`0 8px 28px rgba(0,0,0,.9),0 0 14px ${col}44`,pointerEvents:"none"}}>
+                <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:6,color:col,letterSpacing:1,marginBottom:3}}>{k.icon} {k.name.toUpperCase()}</div>
+                <div style={{fontFamily:"'Cinzel',serif",fontSize:13,color:"#e8dcc8",marginBottom:2}}>{k.capital}</div>
+                {locked&&<div style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:"#9a5a9a",marginTop:4}}>🔒 Vença os 5 reinos primeiro</div>}
+                {done&&!locked&&<div style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:heroic?"#c9a84c":"#5a8a3a",marginTop:4}}>{heroic?"⭐ HEROICO":"✓ CONCLUÍDO"}</div>}
+                {!done&&!locked&&<div style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:"#4a6a8a",marginTop:4}}>▶ CLIQUE PARA EXPLORAR</div>}
+                <div style={{position:"absolute",bottom:-9,left:"50%",transform:"translateX(-50%)",width:0,height:0,borderLeft:"7px solid transparent",borderRight:"7px solid transparent",borderTop:`9px solid ${col}`}}/>
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      </div>
+      </div>
+      {/* Rodapé */}
+      <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:20,background:"linear-gradient(0deg,rgba(3,2,4,.99) 0%,transparent 100%)",padding:"12px 22px",display:"flex",justifyContent:"space-between",alignItems:"flex-end"}}>
+        <div style={{fontFamily:"'IM Fell English',serif",fontSize:12,color:"#5a4a5a",fontStyle:"italic"}}>"{Object.values(scores).filter(s=>s<1).length} reino(s) sucumbiram às sombras."</div>
+        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+          {Object.entries(KD).map(([kid,k])=>{
+            const done=scores[kid]!==undefined;const heroic=heroicScores[kid]===true;
+            return(<div key={kid} style={{display:"flex",alignItems:"center",gap:3}}>
+              <div style={{width:7,height:7,borderRadius:"50%",background:done?(heroic?"#c9a84c":"#3a5a2a"):k.color,boxShadow:!done?`0 0 6px ${k.color}`:"none",transition:"all .3s"}}/>
+              <span style={{fontFamily:"'Press Start 2P',monospace",fontSize:4,color:done?(heroic?"#c9a84c":"#3a5a2a"):k.color}}>{k.name.slice(0,7).toUpperCase()}</span>
+            </div>);
+          })}
+        </div>
+        {allSide&&<button onClick={onEnding} className="btn" style={{fontFamily:"'Cinzel',serif",fontSize:12,padding:"8px 18px",background:"#3a0000",border:"2px solid #7a1010",color:"#ff4444",cursor:"pointer",letterSpacing:2,animation:"pulse 1.5s infinite"}}>▶ VER FINAL</button>}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   LORE SCREEN
+══════════════════════════════════════ */
+function LoreScreen({kid,onPlay,onBack}){
+  const k=KD[kid];
+  const[page,setPage]=useState(0);
+  const[textShown,setTextShown]=useState("");
+  const[textDone,setTextDone]=useState(false);
+  const tmr=useRef(null);
+
+  useEffect(()=>{
+    setTextShown("");setTextDone(false);
+    if(tmr.current)clearInterval(tmr.current);
+    const pg=k.lore_pages[page];
+    if(!pg)return;
+    let idx=0;
+    tmr.current=setInterval(()=>{idx+=3;setTextShown(pg.text.slice(0,idx));if(idx>=pg.text.length){clearInterval(tmr.current);setTextDone(true);}},8);
+    return()=>clearInterval(tmr.current);
+  },[kid,page]);
+
+  const handleNext=()=>{
+    if(!textDone){clearInterval(tmr.current);setTextShown(k.lore_pages[page].text);setTextDone(true);return;}
+    if(page<k.lore_pages.length-1){setPage(p=>p+1);}else{onPlay();}
+  };
+
+  const pg=k.lore_pages[page];
+
+  return(
+    <div style={{width:"100%",height:"100vh",background:"#060408",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+      <div className="crt"/>
+      {/* Castelo de fundo simples */}
+      <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg,${k.dark} 0%,#0a0408 100%)`,zIndex:1}}/>
+      {/* Header */}
+      <div style={{position:"relative",zIndex:10,background:"linear-gradient(180deg,rgba(6,4,8,.98) 0%,rgba(6,4,8,.6) 100%)",padding:"12px 20px",borderBottom:`1px solid ${k.color}44`,display:"flex",alignItems:"center",gap:12}}>
+        <button onClick={onBack} className="btn" style={{background:"rgba(6,4,8,.9)",border:`1px solid ${k.color}44`,color:k.color,padding:"6px 12px",fontFamily:"'Press Start 2P',monospace",fontSize:7,cursor:"pointer"}}>← VOLTAR</button>
+        <div>
+          <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:6,color:k.color,letterSpacing:2}}>{k.capital.toUpperCase()}</div>
+          <div style={{fontFamily:"'Cinzel Decorative',serif",fontSize:17,color:"#e8dcc8",letterSpacing:2}}>{k.name}</div>
+        </div>
+        <div style={{marginLeft:"auto",fontFamily:"'Press Start 2P',monospace",fontSize:6,color:k.color}}>PÁG {page+1}/{k.lore_pages.length}</div>
+      </div>
+      {/* Conteúdo */}
+      <div style={{flex:1,position:"relative",zIndex:10,padding:"18px 26px",display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center"}}>
+        <div style={{maxWidth:820,width:"100%",background:"rgba(6,4,8,.9)",border:`2px solid ${k.color}33`,padding:"28px 32px",boxShadow:`0 0 40px ${k.color}22`}}>
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:28,marginBottom:8}}>{pg.icon}</div>
+            <div style={{fontFamily:"'Cinzel Decorative',serif",fontSize:21,color:k.color,letterSpacing:3,textShadow:`0 0 18px ${k.color}44`}}>{pg.title}</div>
+          </div>
+          <div style={{fontFamily:"'IM Fell English',serif",fontSize:19,color:"#e8dcc8",lineHeight:1.85,minHeight:110}}>
+            {textShown}{!textDone&&<span style={{animation:"blink .5s step-start infinite"}}>█</span>}
+          </div>
+          {/* Heróis do reino */}
+          {textDone&&page===k.lore_pages.length-1&&(
+            <div style={{marginTop:20,borderTop:`1px solid ${k.color}22`,paddingTop:14}}>
+              <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:6,color:k.color,marginBottom:10}}>HERÓIS DESTE REINO</div>
+              <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                {k.party.map(c=>{
+                  const cls=CLS[c.cls];
+                  return(<div key={c.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,.03)",border:`1px solid ${k.color}22`,padding:"6px 10px",flex:"1 1 180px"}}>
+                    <Spr data={cls.spr(c.color)} scale={2} shadow={false}/>
+                    <div>
+                      <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:k.color}}>{c.name}</div>
+                      <div style={{fontFamily:"'IM Fell English',serif",fontSize:11,color:"#5a4a6a"}}>{c.player} · {cls.label}</div>
+                    </div>
+                  </div>);
+                })}
+              </div>
+            </div>
+          )}
+          <div style={{textAlign:"right",marginTop:16}}>
+            <button onClick={handleNext} className="btn" style={{background:"rgba(6,4,8,.9)",border:`1px solid ${k.color}44`,color:k.color,padding:"8px 16px",fontFamily:"'Press Start 2P',monospace",fontSize:7,cursor:"pointer"}}>
+              {textDone?(page<k.lore_pages.length-1?"PRÓXIMA →":"JOGAR →"):"CONTINUAR →"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   CHAR SELECT
+══════════════════════════════════════ */
+function CharSelectScreen({kid,onConfirm,onBack}){
+  const[sel,setSel]=useState(null);
+  const[imgErr,setImgErr]=useState({});
+  const[hov,setHov]=useState(null);
+  const k=KD[kid];
+
+  const EXTRA={
+    charlotte:{race:"Humana",lore:"Rainha de gelo e estratégia"},
+    noah:{race:"Humano",lore:"Clérigo de fé inabalável"},
+    akin:{race:"Humano",lore:"Caçador que matou a própria sombra"},
+    goliath:{race:"Humano",lore:"Colosso de ferro e determinação"},
+    merissa:{race:"Elfa",lore:"Maga dos segredos da floresta"},
+    makhalev:{race:"Humano",lore:"Lorde guerreiro sem igual"},
+    josefines:{race:"Elfo",lore:"Rei ancestral da Grande Floresta"},
+    vigod:{race:"Elfo",lore:"Guardião do conhecimento arcano"},
+    eloor:{race:"Elfo",lore:"Espada rápida como vento élfico"},
+    eclips:{race:"Elfo",lore:"Rei-cientista das minas de ouro"},
+    elisa:{race:"Humana",lore:"Arqueira das profundezas sombrias"},
+    malachi:{race:"Humano",lore:"Guerreiro que tocou a pedra maldita"},
+    aiko:{race:"Humana",lore:"Rainha que acordou do transe"},
+    roronoa:{race:"Humano",lore:"Lâmina que subjugou o feiticeiro"},
+    gabsep:{race:"Humana",lore:"Curandeira dos métodos antigos"},
+    marcelo:{race:"Humano",lore:"Clérigo-Rei do Porto de Ferro"},
+    feli:{race:"Humana",lore:"Portadora do Cajado Roxo"},
+    dean:{race:"Humano",lore:"General de ferro e glória"},
+    aiko_g:{race:"Humana",lore:"Rainha que acordou mais sábia"},
+    marcelo_g:{race:"Humano",lore:"Clérigo-Rei da fé inabalável"},
+    makhalev_g:{race:"Humano",lore:"Lorde marcado pelo destino"},
+  };
+
+  const cls=sel?CLS[sel.cls]:null;
+  const extra=sel?EXTRA[sel.id]||{race:"Desconhecida",lore:"Herói misterioso"}:null;
+
+  const StatBar=({val,max,color,label})=>(
+    <div style={{marginBottom:8}}>
+      <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+        <span style={{fontFamily:"'Press Start 2P',monospace",fontSize:6,color:"#8a7a6a"}}>{label}</span>
+        <span style={{fontFamily:"'Press Start 2P',monospace",fontSize:6,color}}>{val}/{max}</span>
+      </div>
+      <div style={{height:6,background:"rgba(0,0,0,.6)",border:"1px solid rgba(255,255,255,.1)"}}>
+        <div style={{width:`${Math.min(100,(val/max)*100)}%`,height:"100%",background:`linear-gradient(90deg,${color}aa,${color})`,boxShadow:`0 0 6px ${color}88`}}/>
+      </div>
+    </div>
+  );
+
+  return(
+    <div style={{width:"100%",height:"100vh",background:"radial-gradient(ellipse at 50% 30%,#0a0618 0%,#060408 70%)",display:"flex",flexDirection:"column",overflow:"hidden",position:"relative"}}>
+      <div className="crt"/>
+      <div style={{position:"relative",zIndex:10,textAlign:"center",padding:"14px 20px 10px",borderBottom:`1px solid ${k.color}33`,background:"linear-gradient(180deg,rgba(6,4,8,.95) 0%,rgba(6,4,8,.7) 100%)"}}>
+        <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:6,color:"#5a4a6a",letterSpacing:5,marginBottom:5}}>CRÔNICAS DE HEIDENGROUND</div>
+        <div style={{fontFamily:"'Cinzel Decorative',serif",fontSize:20,color:k.color,letterSpacing:5,textShadow:`0 0 24px ${k.color}55`,marginBottom:4}}>ESCOLHA SEU CAMPEÃO</div>
+        <div style={{fontFamily:"'IM Fell English',serif",fontSize:13,color:"#5a4a6a",fontStyle:"italic"}}>{k.name} — {k.capital}</div>
+      </div>
+      <div style={{flex:1,display:"flex",overflow:"hidden",position:"relative",zIndex:10}}>
+        <div style={{flex:1,overflowY:"auto",padding:"20px 24px",display:"flex",flexWrap:"wrap",gap:14,alignContent:"flex-start",justifyContent:"center"}}>
+          {k.party.map(char=>{
+            const charCls=CLS[char.cls];
+            const isSel=sel?.id===char.id;
+            const isHov2=hov===char.id;
+            const col=char.color;
+            const hasPhoto=char.photo&&!imgErr[char.id];
+            return(
+              <div key={char.id}
+                onMouseEnter={()=>setHov(char.id)}
+                onMouseLeave={()=>setHov(null)}
+                onClick={()=>setSel(char)}
+                style={{width:160,flexShrink:0,cursor:"pointer",position:"relative",transition:"all .22s",transform:isSel?"translateY(-8px) scale(1.04)":isHov2?"translateY(-4px)":"none",filter:isSel?`drop-shadow(0 0 18px ${col})`:"none"}}>
+                <div style={{position:"relative",border:`2px solid ${isSel?col:isHov2?col+"88":"#2a1a3a"}`,background:"#0a0408",overflow:"hidden",boxShadow:isSel?`0 0 0 1px ${col}44,0 8px 30px rgba(0,0,0,.9)`:isHov2?"0 4px 20px rgba(0,0,0,.8)":"0 2px 8px rgba(0,0,0,.6)"}}>
+                  <div style={{height:200,overflow:"hidden",position:"relative",background:"#08040c"}}>
+                    {hasPhoto
+                      ?<img src={char.photo} alt={char.name} onError={()=>setImgErr(e=>({...e,[char.id]:true}))} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top center",display:"block",filter:isSel?"brightness(1.1)":"brightness(.85) contrast(1.1)",transition:"filter .2s"}}/>
+                      :<div style={{width:"100%",height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,background:`linear-gradient(180deg,${col}22,#08040c)`}}>
+                        <Spr data={charCls.spr(col)} scale={5} shadow={false}/>
+                      </div>}
+                    <div style={{position:"absolute",bottom:0,left:0,right:0,height:60,background:"linear-gradient(0deg,#0a0408 0%,transparent 100%)",pointerEvents:"none"}}/>
+                    <div style={{position:"absolute",top:6,right:6,background:"rgba(0,0,0,.8)",border:`1px solid ${col}66`,padding:"3px 7px",fontFamily:"'Press Start 2P',monospace",fontSize:6,color:col,letterSpacing:1}}>{charCls.icon} {charCls.label}</div>
+                    {isSel&&<div style={{position:"absolute",inset:0,border:`3px solid ${col}`,boxShadow:`inset 0 0 20px ${col}44`,pointerEvents:"none"}}/>}
+                  </div>
+                  <div style={{padding:"8px 10px 10px",background:`linear-gradient(180deg,#0a0408 0%,${col}18 100%)`}}>
+                    <div style={{fontFamily:"'Cinzel',serif",fontSize:12,color:isSel?col:"#d4c8b8",marginBottom:2,lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textAlign:"center",fontWeight:"bold"}}>{char.name}</div>
+                    <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:"#5a4a6a",textAlign:"center",marginBottom:6}}>{char.player}</div>
+                    <div style={{display:"flex",gap:4,justifyContent:"center",flexWrap:"wrap"}}>
+                      <span style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:"#cc2222",background:"rgba(180,0,0,.2)",border:"1px solid #cc222244",padding:"2px 5px"}}>❤ {char.hp}</span>
+                      <span style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:"#2244cc",background:"rgba(0,60,200,.2)",border:"1px solid #2244cc44",padding:"2px 5px"}}>💧 {char.mp}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{width:320,borderLeft:`1px solid ${k.color}22`,background:"rgba(6,4,8,.97)",display:"flex",flexDirection:"column",flexShrink:0,overflow:"hidden"}}>
+          {sel?(
+            <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column"}}>
+              <div style={{position:"relative",height:260,flexShrink:0,overflow:"hidden",background:"#08040c"}}>
+                {sel.photo&&!imgErr[sel.id]
+                  ?<img src={sel.photo} alt={sel.name} onError={()=>setImgErr(e=>({...e,[sel.id]:true}))} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top center",filter:"brightness(1.05) contrast(1.08)"}}/>
+                  :<div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:`linear-gradient(180deg,${sel.color}22,#08040c)`}}>
+                    <Spr data={CLS[sel.cls].spr(sel.color)} scale={6} shadow={true}/>
+                  </div>}
+                <div style={{position:"absolute",bottom:0,left:0,right:0,height:80,background:"linear-gradient(0deg,rgba(6,4,8,1) 0%,transparent 100%)",pointerEvents:"none"}}/>
+                <div style={{position:"absolute",bottom:8,left:0,right:0,textAlign:"center"}}>
+                  <div style={{fontFamily:"'Cinzel Decorative',serif",fontSize:15,color:sel.color,letterSpacing:2,textShadow:`0 0 14px ${sel.color}88,2px 2px 4px #000`}}>{sel.name}</div>
+                  <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:6,color:"#8a7a6a",marginTop:2}}>{sel.player}</div>
+                </div>
+              </div>
+              <div style={{padding:"14px 16px",flex:1}}>
+                <div style={{display:"flex",gap:8,marginBottom:14}}>
+                  <div style={{flex:1,background:`${sel.color}18`,border:`1px solid ${sel.color}44`,padding:"6px 8px",textAlign:"center"}}>
+                    <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:"#5a4a6a",marginBottom:3}}>CLASSE</div>
+                    <div style={{fontFamily:"'Cinzel',serif",fontSize:12,color:sel.color}}>{cls.icon} {cls.label}</div>
+                  </div>
+                  <div style={{flex:1,background:"rgba(255,255,255,.04)",border:"1px solid #2a1a3a",padding:"6px 8px",textAlign:"center"}}>
+                    <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:"#5a4a6a",marginBottom:3}}>RAÇA</div>
+                    <div style={{fontFamily:"'Cinzel',serif",fontSize:12,color:"#c8bca8"}}>{extra.race}</div>
+                  </div>
+                </div>
+                <div style={{fontFamily:"'IM Fell English',serif",fontSize:14,color:"#8a7a6a",fontStyle:"italic",lineHeight:1.6,marginBottom:14,padding:"8px 10px",background:"rgba(0,0,0,.3)",border:`1px solid ${sel.color}22`}}>"{extra.lore}"</div>
+                <div style={{height:1,background:`linear-gradient(90deg,transparent,${sel.color}55,transparent)`,marginBottom:14}}/>
+                <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:7,color:sel.color,letterSpacing:2,marginBottom:10}}>ATRIBUTOS</div>
+                <StatBar val={sel.hp} max={sel.maxHp} color="#cc2222" label="VIDA"/>
+                <StatBar val={sel.mp} max={sel.maxMp} color="#2244cc" label="MANA"/>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14,marginTop:4}}>
+                  {[{label:"ATK",val:sel.atk,col:"#ff6655",max:32},{label:"DEF",val:sel.def,col:"#4a9adf",max:22},{label:"VEL",val:sel.spd,col:"#44cc66",max:14}].map(s=>(
+                    <div key={s.label} style={{background:"rgba(0,0,0,.4)",border:"1px solid #1a1028",padding:"8px 6px",textAlign:"center"}}>
+                      <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:"#5a4a6a",marginBottom:4}}>{s.label}</div>
+                      <div style={{fontFamily:"'Cinzel',serif",fontSize:18,color:s.col,fontWeight:"bold"}}>{s.val}</div>
+                      <div style={{height:3,background:"#0a0408",marginTop:4}}>
+                        <div style={{width:`${(s.val/s.max)*100}%`,height:"100%",background:s.col,boxShadow:`0 0 4px ${s.col}88`}}/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:7,color:sel.color,letterSpacing:2,marginBottom:8}}>HABILIDADES</div>
+                {cls.skills.map((sk,i)=>{
+                  const elCols={fire:"#ff6600",ice:"#4ac8ff",dark:"#cc44ff",heal:"#44cc66",light:"#ffdd00",physical:"#dddddd"};
+                  const col=elCols[sk.el]||"#fff";
+                  return(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,padding:"5px 7px",background:"rgba(0,0,0,.35)",border:`1px solid ${col}22`}}>
+                      <span style={{fontSize:16}}>{sk.icon}</span>
+                      <div style={{flex:1}}>
+                        <div style={{fontFamily:"'Cinzel',serif",fontSize:11,color:col}}>{sk.name}</div>
+                        <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:"#4a3a5a",marginTop:1}}>{sk.el.toUpperCase()}{sk.mp>0?` · ${sk.mp}MP`:""}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ):(
+            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,textAlign:"center",gap:16}}>
+              <div style={{fontSize:48,opacity:.2}}>⚔</div>
+              <div style={{fontFamily:"'Cinzel',serif",fontSize:15,color:"#3a2a4a",lineHeight:1.7}}>Selecione um campeão para ver seus atributos</div>
+              <div style={{fontFamily:"'IM Fell English',serif",fontSize:13,color:"#2a1a3a",fontStyle:"italic",lineHeight:1.6}}>"Cada herói carrega o peso de um reino inteiro."</div>
+              <div style={{marginTop:8,display:"flex",gap:8,justifyContent:"center",opacity:.3}}>
+                {["queen","warrior","mage","cleric","archer"].map((c,i)=>(
+                  <div key={i} style={{animation:`float ${2+i*.25}s ease-in-out infinite`,animationDelay:`${i*.2}s`}}>
+                    <Spr data={CLS[c].spr(CLS[c].color)} scale={3} shadow={false}/>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <div style={{padding:"14px 16px",borderTop:`1px solid ${k.color}22`,background:"rgba(6,4,8,.99)",flexShrink:0}}>
+            <button onClick={()=>sel&&onConfirm(sel)} disabled={!sel} className="btn"
+              style={{width:"100%",padding:"13px 0",background:sel?`linear-gradient(135deg,${sel.color}33,rgba(6,4,8,.95))`:"rgba(6,4,8,.5)",border:`2px solid ${sel?sel.color:"#1a1028"}`,color:sel?sel.color:"#2a1a35",fontFamily:"'Cinzel Decorative',serif",fontSize:13,letterSpacing:3,cursor:sel?"pointer":"not-allowed",boxShadow:sel?`0 0 20px ${sel.color}44,0 6px 0 #050204`:"none",transition:"all .2s"}}>
+              {sel?`⚔ CONFIRMAR — ${sel.name.split(" ")[0].toUpperCase()}`:"— SELECIONE UM CAMPEÃO —"}
+            </button>
+            <div style={{display:"flex",justifyContent:"space-between",marginTop:8,alignItems:"center"}}>
+              <button onClick={onBack} className="btn" style={{background:"transparent",border:"none",color:"#4a3a5a",fontFamily:"'Press Start 2P',monospace",fontSize:6,cursor:"pointer",padding:"4px 0"}}>← VOLTAR</button>
+              <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:"#2a1a35"}}>{k.party.length} heróis disponíveis</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExploreScreen({kid,onBattle,onBack,onLore}){
+  const k=KD[kid];
+  const[step,setStep]=useState(0);
+  const[gmText,setGmText]=useState("");
+  const[gmLoad,setGmLoad]=useState(true);
+  const[chosen,setChosen]=useState(null);
+  const[diceRoll,setDiceRoll]=useState(null);
+  const[rollingDice,setRollingDice]=useState(false);
+  const[timer,setTimer]=useState(15);
+  const[timerActive,setTimerActive]=useState(false);
+  const timerRef=useRef(null);
+
+  useEffect(()=>{
+    setStep(0);setChosen(null);setDiceRoll(null);setRollingDice(false);setTimer(15);setTimerActive(false);
+    callAI(`Introdução épica para ${k.name}: ${k.lore_title}`,`O peso das sombras recai sobre ${k.name}. O destino dos inocentes está em suas mãos.`)
+      .then(t=>{setGmText(t);setGmLoad(false);setStep(1);});
+    return()=>clearInterval(timerRef.current);
+  },[kid]);
+
+  useEffect(()=>{
+    if(step===1&&!gmLoad){
+      setTimer(15);setTimerActive(true);
+      timerRef.current=setInterval(()=>{
+        setTimer(prev=>{
+          if(prev<=1){
+            clearInterval(timerRef.current);
+            setTimerActive(false);
+            handleChoice(k.choices.find(c=>!c.heroic)||k.choices[0]);
+            return 0;
+          }
+          return prev-1;
+        });
+      },1000);
+    }
+    return()=>clearInterval(timerRef.current);
+  },[step,gmLoad]);
+
+  const handleChoice=useCallback(async(ch)=>{
+    clearInterval(timerRef.current);
+    setTimerActive(false);
+    setChosen(ch.id);
+    setRollingDice(true);
+    setGmLoad(true);
+    // Rolar dado animado
+    let frames=0;
+    const rollAnim=setInterval(()=>{setDiceRoll(1+Math.floor(Math.random()*20));frames++;if(frames>15){clearInterval(rollAnim);const final=1+Math.floor(Math.random()*20);setDiceRoll(final);setRollingDice(false);}},60);
+    callAI(`Consequência da decisão "${ch.text}" em ${k.name}.`,"A decisão foi tomada. A batalha começou.")
+      .then(t=>{setGmText(t);setGmLoad(false);setStep(2);});
+  },[k]);
+
+  return(
+    <div style={{width:"100%",height:"100vh",background:`radial-gradient(ellipse at 50% 30%,${k.dark} 0%,#060408 100%)`,display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+      <div className="crt"/>
+      <div style={{position:"relative",zIndex:10,flex:1,display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"18px",gap:16}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <button onClick={onBack} className="btn" style={{background:"rgba(6,4,8,.9)",border:`1px solid ${k.color}44`,color:k.color,padding:"6px 12px",fontFamily:"'Press Start 2P',monospace",fontSize:7,cursor:"pointer"}}>← VOLTAR</button>
+          <div style={{fontFamily:"'Cinzel Decorative',serif",fontSize:18,color:k.color,letterSpacing:3}}>{k.name}</div>
+          <button onClick={onLore} className="btn" style={{background:"rgba(6,4,8,.9)",border:`1px solid ${k.color}44`,color:k.color,padding:"6px 12px",fontFamily:"'Press Start 2P',monospace",fontSize:7,cursor:"pointer"}}>LORE ℹ</button>
+        </div>
+        <DlgBox text={gmText} loading={gmLoad} kColor={k.color} onNext={undefined}/>
+        <div>
+          {step===1&&!gmLoad&&(
+            <div style={{background:"rgba(6,4,8,.92)",border:`2px solid ${k.color}33`,padding:"14px 18px",animation:"fadeUp .3s ease"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+                <div style={{fontFamily:"'Cinzel Decorative',serif",fontSize:15,color:k.color,letterSpacing:2}}>SUA DECISÃO</div>
+                {timerActive&&<div style={{fontFamily:"'Press Start 2P',monospace",fontSize:8,color:"#ff6600",animation:"blink .8s infinite"}}>⏳ {timer}s</div>}
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {k.choices.map((ch,i)=>(
+                  <button key={ch.id} onClick={()=>handleChoice(ch)} className="btn choice-btn"
+                    style={{background:"rgba(6,4,8,.9)",border:`1px solid ${k.color}44`,color:"#e8dcc8",padding:"10px 14px",fontFamily:"'Cinzel',serif",fontSize:14,cursor:"pointer",textAlign:"left",display:"flex",flexDirection:"column",gap:4,animation:`choiceReveal .3s ease ${i*.1}s forwards`,opacity:0,"--kcol":k.color}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{fontFamily:"'Press Start 2P',monospace",fontSize:7,color:k.color}}>{i+1}</span>
+                      <span>{ch.text}</span>
+                      {ch.heroic&&<span style={{marginLeft:"auto",fontFamily:"'Press Start 2P',monospace",fontSize:5,color:"#c9a84c",background:"rgba(201,168,76,.15)",border:"1px solid #c9a84c44",padding:"2px 6px"}}>⭐ HEROICO</span>}
+                    </div>
+                    <div style={{fontFamily:"'IM Fell English',serif",fontSize:12,color:"#5a4a6a",fontStyle:"italic",paddingLeft:24}}>{ch.detail}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {step===2&&(
+            <div style={{display:"flex",gap:10,justifyContent:"center",alignItems:"center",padding:"0 0 6px",animation:"fadeUp .4s ease"}}>
+              <div style={{background:"rgba(6,4,8,.97)",border:`2px solid ${k.color}33`,padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
+                <D20 val={diceRoll} rolling={rollingDice}/>
+                {!rollingDice&&diceRoll&&<div style={{fontFamily:"'Press Start 2P',monospace",fontSize:8,color:diceRoll>=18?"#ff6600":diceRoll<=3?"#4488ff":"#c9a84c"}}>D20: {diceRoll}</div>}
+              </div>
+              <button onClick={()=>onBattle(chosen)} className="btn"
+                style={{background:`linear-gradient(135deg,${k.color}22,rgba(6,4,8,.9))`,border:`2px solid ${k.color}`,color:k.color,padding:"10px 30px",fontFamily:"'Cinzel Decorative',serif",fontSize:15,letterSpacing:3,cursor:"pointer",boxShadow:`0 0 22px ${k.color}44,0 7px 0 #050204`,animation:"pulse 1.5s infinite"}}>
+                ⚔ PARTIR PARA A BATALHA
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   BATTLE SCREEN — JSX CORRIGIDO
+══════════════════════════════════════ */
+function BattleScreen({kid,chosenChar,choiceId,onEnd,onBack}){
+  const k=KD[kid];
+  const isHeroic=choiceId===k.heroicKey;
+  const hBonus=isHeroic?5:0;
+
+  const[party,setParty]=useState(()=>[{...chosenChar,hp:chosenChar.maxHp,mp:chosenChar.maxMp,atk:chosenChar.atk+hBonus,def:chosenChar.def+hBonus,type:"player"}]);
+  const[enemies,setEnemies]=useState(()=>{
+    if(kid==="chrnus"){
+      return[{uid:"shadow_"+chosenChar.id,name:"Sombra de "+chosenChar.name.split(" ")[0],hp:Math.floor(chosenChar.maxHp*1.2),maxHp:Math.floor(chosenChar.maxHp*1.2),atk:chosenChar.atk+3,def:Math.max(1,chosenChar.def-2),spd:chosenChar.spd+1,spr:SPR.shadow(chosenChar.color),scale:7,glowColor:chosenChar.color,photo:chosenChar.id==="makhalev"?"Sombradolorde1.png":null,type:"enemy"}];
+    }
+    return k.enemies.map(e=>({...e,hp:e.maxHp,type:"enemy"}));
+  });
+
+  const[phase,setPhase]=useState("intro");
+  const[activeId,setActiveId]=useState(null);
+  const[pendingAct,setPending]=useState(null);
+  const[anims,setAnims]=useState({});
+  const[floats,setFloats]=useState([]);
+  const[projectiles,setProjectiles]=useState([]);
+  const[log,setLog]=useState([]);
+  const[dice,setDice]=useState({rolling:false,val:20});
+  const[result,setResult]=useState(null);
+  const[gmLine,setGmLine]=useState("O Mestre aguarda o início...");
+  const[gmLoad,setGmLoad]=useState(false);
+  const[imgErr,setImgErr]=useState({});
+
+  const pRef=useRef(party);
+  const eRef=useRef(enemies);
+  const toRef=useRef([]);
+  const tRef=useRef(-1);
+
+  useEffect(()=>{pRef.current=party;},[party]);
+  useEffect(()=>{eRef.current=enemies;},[enemies]);
+
+  // BUG FIX: calculateDamage definido como função normal, não useCallback
+  // para evitar problemas de ordem de declaração
+  const calculateDamage=(attacker,defender,skill,roll)=>{
+    let baseDmg=attacker.atk*(skill?.dmgMult||1.0);
+    let finalDmg=Math.max(1,baseDmg-(defender.def||8)*.7);
+    let hitType="damage";
+    if(roll>=18){finalDmg=Math.floor(finalDmg*1.7);hitType="crit";}
+    else if(roll<=3){finalDmg=0;hitType="miss";}
+    return{dmg:Math.floor(finalDmg),type:hitType};
+  };
+
+  const addLog=useCallback((msg)=>setLog(prev=>[msg,...prev].slice(0,5)),[]);
+  const addAnim=useCallback((id,anim)=>{
+    setAnims(prev=>({...prev,[id]:anim}));
+    setTimeout(()=>setAnims(prev=>{const n={...prev};delete n[id];return n;}),anim==="die"?1200:600);
+  },[]);
+
+  const addFloat=useCallback((val,type,x,y)=>{
+    const id=Math.random();
+    setFloats(prev=>[...prev,{id,val,type,x,y}]);
+    setTimeout(()=>setFloats(prev=>prev.filter(f=>f.id!==id)),1500);
+  },[]);
+
+  const rollD20=useCallback(()=>new Promise(res=>{
+    let frames=0;
+    const loop=setInterval(()=>{
+      const v=1+Math.floor(Math.random()*20);
+      setDice({rolling:true,val:v});
+      frames++;
+      if(frames>18){clearInterval(loop);const final=1+Math.floor(Math.random()*20);setDice({rolling:false,val:final});res(final);}
+    },55);
+  }),[]);
+
+  // BUG FIX: nextTurn e doEnemyAction declarados com useRef para evitar
+  // dependência circular entre si
+  const nextTurnRef=useRef(null);
+  const doEnemyRef=useRef(null);
+
+  const nextTurn=useCallback(()=>{
+    const lp=pRef.current.filter(c=>c.hp>0);
+    const le=eRef.current.filter(e=>e.hp>0);
+    if(lp.length===0){setResult("lose");setPhase("done");callAI("Derrota épica","Os heróis caem. As sombras vencem.").then(t=>setGmLine(t));return;}
+    if(le.length===0){setResult("win");setPhase("done");callAI("Vitória gloriosa","A luz prevalece. As sombras recuam.").then(t=>setGmLine(t));return;}
+    tRef.current=(tRef.current+1)%toRef.current.length;
+    const actor=toRef.current[tRef.current];
+    setActiveId(actor.id||actor.uid);
+    if(actor.type==="player"){setPhase("player");}
+    else{setPhase("enemy");setTimeout(()=>doEnemyRef.current&&doEnemyRef.current(actor.uid),800);}
+  },[]);
+
+  nextTurnRef.current=nextTurn;
+
+  const doEnemyAction=useCallback(async(enemyId)=>{
+    const enemy=eRef.current.find(e=>e.uid===enemyId);
+    if(!enemy||enemy.hp<=0){nextTurnRef.current();return;}
+    const lp=pRef.current.filter(c=>c.hp>0);
+    if(lp.length===0)return;
+    const target=lp[0];
+    setPhase("rolling");
+    addAnim(enemy.uid,"attack");
+
+    const srcEl=document.getElementById(`enemy-${enemy.uid}`);
+    const dstEl=document.getElementById(`char-${target.id}`);
+    if(srcEl&&dstEl){
+      const a=srcEl.getBoundingClientRect(),b=dstEl.getBoundingClientRect();
+      const proj=createProjectile(a.left+a.width*.3,a.top+a.height*.3,b.left+b.width*.6,b.top+b.height*.3,"dark");
+      setProjectiles(p=>[...p,proj]);
+      setTimeout(()=>setProjectiles(p=>p.filter(x=>x.id!==proj.id)),proj.dur);
+    }
+
+    const roll=await rollD20();
+    await new Promise(r=>setTimeout(r,380));
+
+    const{dmg,type}=calculateDamage(enemy,target,{dmgMult:1.1},roll);
+    setParty(prev=>prev.map(c=>c.id===target.id?{...c,hp:Math.max(0,c.hp-dmg)}:c));
+
+    const box=dstEl?.getBoundingClientRect();
+    if(box)addFloat(dmg,type,box.left+box.width/2,box.top+box.height*.2);
+    addAnim(target.id,"hit");
+    addLog(dmg===0?`${enemy.name} falha em atingir ${target.name}.`:`${enemy.name} causa ${dmg}${type==="crit"?" (crítico)":""} em ${target.name}.`);
+
+    await new Promise(r=>setTimeout(r,500));
+    nextTurnRef.current();
+  },[rollD20,addAnim,addFloat,addLog]);
+
+  doEnemyRef.current=doEnemyAction;
+
+  const doPlayerAction=useCallback(async(actionType,element,targetId,skillName)=>{
+    if(phase!=="selecting")return;
+    const actor=pRef.current.find(c=>c.id===activeId);
+    if(!actor||actor.hp<=0)return;
+    setPhase("rolling");
+
+    const isHeal=actionType==="heal";
+    const skill=CLS[actor.cls].skills.find(s=>s.el===element&&(skillName?s.name===skillName:true))||null;
+    const mpCost=skill?.mp||0;
+
+    if(mpCost>0&&actor.mp<mpCost){addLog("MP insuficiente!");setPhase("player");return;}
+    if(mpCost>0)setParty(prev=>prev.map(c=>c.id===actor.id?{...c,mp:c.mp-mpCost}:c));
+
+    const target=isHeal?pRef.current.find(c=>c.id===targetId):eRef.current.find(e=>e.uid===targetId);
+    if(!target){setPhase("player");return;}
+
+    const srcEl=document.getElementById(`char-${actor.id}`);
+    const dstEl=document.getElementById(isHeal?`char-${target.id}`:`enemy-${target.uid}`);
+    if(srcEl&&dstEl){
+      const a=srcEl.getBoundingClientRect(),b=dstEl.getBoundingClientRect();
+      const proj=createProjectile(a.left+a.width*.7,a.top+a.height*.3,b.left+b.width*.3,b.top+b.height*.3,isHeal?"heal":(skill?.el||"physical"));
+      setProjectiles(p=>[...p,proj]);
+      setTimeout(()=>setProjectiles(p=>p.filter(x=>x.id!==proj.id)),proj.dur);
+    }
+
+    const roll=await rollD20();
+    await new Promise(r=>setTimeout(r,380));
+
+    if(isHeal){
+      const heal=Math.floor((actor.atk*1.2+20)*(roll/10));
+      setParty(prev=>prev.map(c=>c.id===target.id?{...c,hp:Math.min(c.maxHp,c.hp+heal)}:c));
+      const box=dstEl?.getBoundingClientRect();
+      if(box)addFloat(heal,"heal",box.left+box.width/2,box.top+box.height*.2);
+      addLog(`${actor.name} cura ${target.name} em ${heal} HP.`);
+    }else{
+      const{dmg,type}=calculateDamage(actor,target,skill,roll);
+      setEnemies(prev=>prev.map(e=>e.uid===target.uid?{...e,hp:Math.max(0,e.hp-dmg)}:e));
+      const box=dstEl?.getBoundingClientRect();
+      if(box)addFloat(dmg,type,box.left+box.width/2,box.top+box.height*.2);
+      addAnim(target.uid,eRef.current.find(e=>e.uid===target.uid)?.hp-dmg<=0?"die":"hit");
+      addLog(dmg===0?`${actor.name} erra o golpe!`:`${actor.name} causa ${dmg}${type==="crit"?" (crítico)":""} em ${target.name}.`);
+    }
+
+    setPending(null);
+    await new Promise(r=>setTimeout(r,480));
+    nextTurnRef.current();
+  },[phase,activeId,rollD20,addAnim,addFloat,addLog]);
+
+  const startBattle=useCallback(()=>{
+    callAI(`Batalha começa em ${k.name} contra ${k.enemies.map(e=>e.name).join(", ")}.`,"Você pisa no campo de batalha. Seu adversário se revela.")
+      .then(t=>{setGmLine(t);setGmLoad(false);});
+    const order=[...pRef.current,...eRef.current].sort((a,b)=>b.spd-a.spd);
+    toRef.current=order;tRef.current=-1;
+    setTimeout(()=>nextTurnRef.current(),600);
+  },[k]);
+
+  const activeChar=party.find(c=>c.id===activeId&&c.hp>0);
+  const displayEnemy=enemies.find(e=>e.hp>0)||enemies[0];
+
+  return(
+    <div className="battle-layout">
+      <div className="crt"/>
+      <PartCanvas projectiles={projectiles}/>
+      {/* Dano flutuante — fixed position, fora do layout */}
+      {floats.map(f=><FloatDmg key={f.id} val={f.val} type={f.type} x={f.x} y={f.y}/>)}
+
+      {/* ÁREA DA TELA DE BATALHA (esquerda 70%) */}
+      <div className="battle-canvas-area">
+        <img src="cenario1.png" alt="Cenário" className="cenario-img" onError={e=>{e.target.style.display="none"}}/>
+
+        {/* HUD Herói */}
+        {party[0]&&(
+          <div className="hud-panel player-hud">
+            <div className="char-portrait">
+              {party[0].photo&&!imgErr[party[0].id]
+                ?<img src={party[0].photo} alt="Herói" className="portrait-img" onError={()=>setImgErr(p=>({...p,[party[0].id]:true}))}/>
+                :<div style={{width:"100%",height:"100%",background:party[0].color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{CLS[party[0].cls].icon}</div>}
+            </div>
+            <div className="hp-mp-bars">
+              <div style={{fontSize:8,color:"#f3e0aa",fontFamily:"'Press Start 2P',monospace"}}>{party[0].name}</div>
+              <Bar cur={party[0].hp} max={party[0].maxHp} color="#b02020" h={8} nums={true}/>
+              <Bar cur={party[0].mp} max={party[0].maxMp} color="#2050b8" h={6}/>
+            </div>
+          </div>
+        )}
+
+        {/* HUD Inimigo */}
+        {displayEnemy&&(
+          <div className="hud-panel enemy-hud">
+            <div className="hp-mp-bars" style={{textAlign:"right"}}>
+              <div style={{fontSize:7,color:"#ff5555",fontFamily:"'Press Start 2P',monospace"}}>{displayEnemy.name}</div>
+              <Bar cur={displayEnemy.hp} max={displayEnemy.maxHp} color="#b02020" h={8} nums={true}/>
+            </div>
+            <div className="char-portrait">
+              {displayEnemy.photo&&!imgErr[displayEnemy.uid]
+                ?<img src={displayEnemy.photo} alt="Inimigo" className="portrait-img" style={{transform:"scaleX(-1)"}} onError={()=>setImgErr(p=>({...p,[displayEnemy.uid]:true}))}/>
+                :<div style={{width:"100%",height:"100%",background:displayEnemy.glowColor||"#333",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>👁</div>}
+            </div>
+          </div>
+        )}
+
+        {/* Turno + D20 */}
+        <div style={{position:"absolute",top:15,left:"50%",transform:"translateX(-50%)",zIndex:50,display:"flex",gap:12,alignItems:"center"}}>
+          <div style={{background:"rgba(5,3,8,.85)",border:`1px solid ${k.color}55`,padding:"7px 12px",fontSize:7,fontFamily:"'Press Start 2P',monospace",color:k.color}}>
+            {phase==="intro"?"INÍCIO":phase==="player"?"SEU TURNO":phase==="enemy"?"INIMIGO":phase==="rolling"?"ROLANDO...":"FIM"}
+          </div>
+          {(dice.rolling||dice.val!==20)&&<D20 val={dice.val} rolling={dice.rolling}/>}
+        </div>
+
+        {/* CHÃO COM PERSONAGENS */}
+        <div className="action-ground">
+          {/* HERÓIS (esquerda) */}
+          <div style={{display:"flex",gap:16,alignItems:"flex-end"}}>
+            {party.map(c=>{
+              const isActive=c.id===activeId&&(phase==="player"||phase==="selecting"||phase==="rolling");
+              const dead=c.hp<=0;
+              const canTarget=phase==="selecting"&&pendingAct?.type==="heal"&&!dead;
+              return(
+                <div key={c.id} id={`char-${c.id}`} className="char-sprite-box"
+                  onClick={()=>{if(canTarget)doPlayerAction("heal","heal",c.id);}}
+                  style={{opacity:dead?.3:1,transform:isActive?"translateY(-12px) scale(1.06)":"none",filter:isActive?`drop-shadow(0 0 12px ${k.color})`:canTarget?"drop-shadow(0 0 10px #44ff88)":"none",cursor:canTarget?"crosshair":"default",transition:"all .2s"}}>
+                  {isActive&&phase==="rolling"&&pendingAct?.type==="skill"&&(
+                    <><div className="magic-spell-portal"/><div className="rainbow-laser"/></>
+                  )}
+                  {c.photo&&!imgErr[c.id]
+                    ?<img src={c.photo} className="sprite-img" alt={c.name} onError={()=>setImgErr(p=>({...p,[c.id]:true}))}/>
+                    :<Spr data={CLS[c.cls].spr(c.color)} scale={5} shadow={!dead}/>}
+                  <div className="char-name-label">{c.name.split(" ")[0]}</div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* INIMIGOS (direita) */}
+          <div style={{display:"flex",gap:16,alignItems:"flex-end"}}>
+            {enemies.map(e=>{
+              const isActive=e.uid===activeId&&(phase==="enemy"||phase==="rolling");
+              const dead=e.hp<=0;
+              const canTarget=phase==="selecting"&&pendingAct?.type!=="heal"&&!dead;
+              const isAttacking=anims[e.uid]==="attack";
+              const isHit=anims[e.uid]==="hit";
+              return(
+                <div key={e.uid} id={`enemy-${e.uid}`} className="char-sprite-box"
+                  onClick={()=>{if(canTarget)doPlayerAction(pendingAct.type,pendingAct.el,e.uid,pendingAct.name);}}
+                  style={{opacity:dead?.2:1,transform:isAttacking?"translateX(-45px) scale(1.1)":isActive?"translateY(-10px)":"none",transition:"transform .15s ease",filter:isActive?"drop-shadow(0 0 18px rgba(255,0,0,.8))":canTarget?"drop-shadow(0 0 12px #ff4444)":"none",cursor:canTarget?"crosshair":"default"}}>
+                  {isActive&&<><div className="shadow-spell-portal"/><div className="shadow-laser"/></>}
+                  {isHit&&<div className="blood-explosion"/>}
+                  {e.photo&&!imgErr[e.uid]
+                    ?<img src={e.photo} className="sprite-img enemy-img" alt={e.name} onError={()=>setImgErr(p=>({...p,[e.uid]:true}))}/>
+                    :<Spr data={typeof e.spr==="function"?e.spr():e.spr} scale={e.scale||SC} shadow={!dead} glowColor={e.glowColor}/>}
+                  <div className="char-name-label" style={{color:"#ff4444"}}>{e.name.split(" ")[0]}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>{/* FIM action-ground */}
+      </div>{/* FIM battle-canvas-area */}
+
+      {/* PAINEL DIREITO (30%) */}
+      <div className="right-ui-panel">
+        {/* Comandos */}
+        <div style={{flex:1,padding:18,borderBottom:"2px solid #3b3552",display:"flex",flexDirection:"column",gap:12,overflowY:"auto"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{fontFamily:"'Cinzel',serif",color:"#e8dcc8",fontSize:16}}>COMANDOS</div>
+            <button className="btn" onClick={onBack} style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,padding:"5px 8px",background:"rgba(10,6,18,.9)",border:"1px solid #553333",color:"#aa7777"}}>FUGIR</button>
+          </div>
+
+          {phase==="intro"&&(
+            <button className="btn" onClick={startBattle} style={{width:"100%",height:70,background:"#2a1610",border:`2px solid ${k.color}`,color:k.color,fontFamily:"'Cinzel',serif",fontSize:16,boxShadow:`0 0 15px ${k.color}44`,letterSpacing:2}}>
+              ⚔ ROLAR INICIATIVA
+            </button>
+          )}
+
+          <div style={{background:"rgba(6,4,8,.9)",border:`1px solid ${k.color}22`,padding:"10px 12px",fontSize:13,fontFamily:"'IM Fell English',serif",color:"#a09080",fontStyle:"italic",lineHeight:1.5,animation:gmLoad?"breathe 1s infinite":undefined}}>
+            {gmLoad?"O Mestre narra...":`"${gmLine}"`}
+          </div>
+
+          {phase==="player"&&activeChar&&(
+            <div style={{background:"rgba(5,3,8,.95)",border:"1px solid #444",padding:12}}>
+              <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:7,color:k.color,marginBottom:12}}>AÇÕES — {activeChar.name.toUpperCase()}</div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                <button className="btn" onClick={()=>{setPending({type:"attack",el:"physical"});setPhase("selecting");}}
+                  style={{background:"#261010",border:"1px solid #b04040",color:"#ffb0a0",fontFamily:"'Press Start 2P',monospace",fontSize:7,padding:10,textAlign:"left",cursor:"pointer"}}>
+                  ⚔ ATAQUE BÁSICO
+                </button>
+                {CLS[activeChar.cls].skills.map((s,idx)=>{
+                  const dis=activeChar.mp<s.mp;
+                  const col=elCols[s.el]||"#fff";
+                  return(
+                    <button key={idx} className="btn" disabled={dis}
+                      onClick={()=>{setPending({type:"skill",el:s.el,name:s.name});setPhase("selecting");}}
+                      style={{background:dis?"#120810":"#161018",border:`1px solid ${dis?"#333":col}`,color:dis?"#555":col,fontFamily:"'Press Start 2P',monospace",fontSize:7,padding:10,opacity:dis?.4:1,textAlign:"left",cursor:dis?"not-allowed":"pointer"}}>
+                      {s.icon} {s.name.toUpperCase()} ({s.mp}MP)
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {phase==="selecting"&&<div style={{fontFamily:"'Press Start 2P',monospace",fontSize:8,color:"#ffcc66",textAlign:"center",padding:16,animation:"blink 1s infinite"}}>{pendingAct?.type==="heal"?"♥ CLIQUE NUM ALIADO":"◈ CLIQUE NUM INIMIGO"}</div>}
+          {phase==="rolling"&&<div style={{fontFamily:"'Press Start 2P',monospace",fontSize:8,color:k.color,textAlign:"center",padding:16}}>ROLANDO O DADO...</div>}
+          {phase==="enemy"&&<div style={{fontFamily:"'Press Start 2P',monospace",fontSize:8,color:"#ff5555",textAlign:"center",padding:16}}>INIMIGO PREPARA GOLPE...</div>}
+          {phase==="done"&&(
+            <div style={{textAlign:"center",padding:16}}>
+              <div style={{fontFamily:"'Cinzel Decorative',serif",fontSize:24,color:result==="win"?"#c9a84c":"#ff5555",marginBottom:14}}>{result==="win"?"✦ VITÓRIA ✦":"✖ DERROTA ✖"}</div>
+              <button className="btn" onClick={()=>onEnd(result==="win",isHeroic)} style={{fontFamily:"'Press Start 2P',monospace",fontSize:8,padding:"10px 20px",background:"rgba(10,6,18,.9)",border:`1px solid ${k.color}`,color:k.color,cursor:"pointer"}}>CONTINUAR →</button>
+            </div>
+          )}
+        </div>
+
+        {/* Log de batalha */}
+        <div style={{flex:1,background:"#08060a",padding:16,overflowY:"auto"}}>
+          <div style={{fontFamily:"'Cinzel',serif",color:"#555",fontSize:13,marginBottom:12,borderBottom:"1px solid #333",paddingBottom:5}}>REGISTRO DE BATALHA</div>
+          <div style={{display:"flex",flexDirection:"column",gap:8,fontFamily:"'IM Fell English',serif",fontSize:15,color:"#e8dcc8"}}>
+            {log.map((l,i)=>(
+              <div key={i} style={{opacity:1-i*.15,borderLeft:i===0?`2px solid ${k.color}`:"2px solid transparent",paddingLeft:8}}>{l}</div>
+            ))}
+          </div>
+        </div>
+      </div>{/* FIM right-ui-panel */}
+    </div>/* FIM battle-layout */
+  );
+}
+
+/* ══════════════════════════════════════
+   ENDING SCREEN
+══════════════════════════════════════ */
+function EndingScreen({scores,heroicScores,onRestart}){
+  const[ep,setEp]=useState("");
+  const[loading,setLoading]=useState(true);
+  const hCount=Object.values(heroicScores).filter(v=>v===true).length;
+  const dCount=Object.values(scores).filter(s=>s<1).length;
+  const allH=hCount>=5;
+  const g=allH
+    ?{title:"A LUZ PREVALECE",color:"#c9a84c",icon:"⭐",desc:"Cinco reinos escolheram a verdade sobre o orgulho. O Ego foi dissipado pela única arma que ele nunca soube usar: a admissão honesta dos próprios erros."}
+    :dCount>=3
+    ?{title:"O EGO ASCENDE",color:"#cc2200",icon:"💀",desc:"O Ego agora tem forma, voz e coroa. Ghanor não foi conquistado por exércitos — foi traído por dentro."}
+    :{title:"A CICATRIZ PERMANECE",color:"#4a7adf",icon:"🌙",desc:"Alguns reinos escolheram bem. Outros carregam feridas. O Ego foi enfraquecido — não destruído."};
+  useEffect(()=>{
+    callAI(`Final de Ghanor: "${g.title}". ${hCount} vitórias heroicas. Epílogo de 3 frases épicas.`,g.desc).then(t=>{setEp(t);setLoading(false);});
+  },[]);
+  return(
+    <div style={{width:"100%",minHeight:"100vh",background:"radial-gradient(ellipse at 50% 0%,#1a0808 0%,#060408 70%)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"50px 40px",position:"relative"}}>
+      <div className="crt"/>
+      <div style={{maxWidth:820,textAlign:"center",position:"relative",zIndex:10,animation:"fadeUp .8s ease"}}>
+        <div style={{fontSize:48,marginBottom:14}}>{g.icon}</div>
+        <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:7,color:"#5a4a6a",letterSpacing:4,marginBottom:10}}>O CREPÚSCULO DE GHANOR</div>
+        <div style={{fontFamily:"'Cinzel Decorative',serif",fontSize:26,color:g.color,letterSpacing:5,marginBottom:22,textShadow:`0 0 28px ${g.color}66`}}>{g.title}</div>
+        <div style={{width:200,height:1,background:`linear-gradient(90deg,transparent,${g.color},transparent)`,margin:"0 auto 18px"}}/>
+        <div style={{fontFamily:"'IM Fell English',serif",fontSize:18,color:"#e8dcc8",lineHeight:1.85,marginBottom:28,fontStyle:"italic"}}>"{loading?"O Mestre tece o epílogo...":ep}"</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:10,marginBottom:28}}>
+          {Object.entries(scores).map(([kid,sc])=>{
+            const k=KD[kid];if(!k)return null;
+            const heroic=heroicScores[kid]===true,won=sc>=1;
+            const e=heroic?k.ending.heroic:won?k.ending.bittersweet:k.ending.dark;
+            return(<div key={kid} style={{background:"rgba(6,4,8,.97)",border:`1px solid ${heroic?"#c9a84c44":won?"#3a5a2a44":"#cc220044"}`,padding:"12px 14px",textAlign:"left"}}>
+              <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:k.color,marginBottom:4}}>{k.icon} {k.name.toUpperCase()}</div>
+              <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:5,color:heroic?"#c9a84c":won?"#5a8a3a":"#cc2200",marginBottom:6}}>{heroic?"⭐ HEROICO":won?"○ VITÓRIA":"✖ DERROTA"}</div>
+              <div style={{fontFamily:"'IM Fell English',serif",fontSize:12,color:"#5a4a6a",lineHeight:1.6,fontStyle:"italic"}}>"{e.slice(0,90)}..."</div>
+            </div>);
+          })}
+        </div>
+        <button onClick={onRestart} className="btn" style={{background:"rgba(6,4,8,.97)",border:"2px solid #3a2818",color:"#c9a84c",padding:"14px 40px",fontFamily:"'Cinzel',serif",fontSize:14,letterSpacing:4,cursor:"pointer",boxShadow:"0 8px 0 #030204"}}>
+          REINICIAR O CICLO
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   APP ROOT
+══════════════════════════════════════ */
+function App(){
+  const[screen,setScreen]=useState("title");
+  const[kid,setKid]=useState(null);
+  const[scores,setScores]=useState({});
+  const[heroicScores,setHeroicScores]=useState({});
+  const[chosenChar,setChosenChar]=useState(null);
+  const[choiceId,setChoiceId]=useState(null);
+  const SIDE=["chrnus","loorum","zandar","magnos","prysma"];
+
+  const handleBattleEnd=(won,isHeroic)=>{
+    const ns={...scores,[kid]:won?1:0};
+    setScores(ns);
+    if(won&&isHeroic)setHeroicScores(h=>({...h,[kid]:true}));
+    const allSide=SIDE.every(k=>ns[k]!==undefined);
+    if(allSide&&!ns["erebor"]){setKid("erebor");setScreen("lore");}
+    else if(ns["erebor"]!==undefined){setScreen("ending");}
+    else{setScreen("map");}
+  };
+
+  return(
+    <EB>
+      {screen==="title"&&<TitleScreen onStart={()=>setScreen("map")}/>}
+      {screen==="map"&&<MapScreen scores={scores} heroicScores={heroicScores} onSelect={k=>{setKid(k);setScreen("lore");}} onEnding={()=>setScreen("ending")}/>}
+      {screen==="lore"&&kid&&<LoreScreen kid={kid} onPlay={()=>setScreen("charselect")} onBack={()=>setScreen("map")}/>}
+      {screen==="charselect"&&kid&&<CharSelectScreen kid={kid} onConfirm={c=>{setChosenChar(c);setScreen("explore");}} onBack={()=>setScreen("lore")}/>}
+      {screen==="explore"&&kid&&<ExploreScreen kid={kid} onBattle={cId=>{setChoiceId(cId);setScreen("battle");}} onBack={()=>setScreen("charselect")} onLore={()=>setScreen("lore")}/>}
+      {screen==="battle"&&kid&&chosenChar&&<BattleScreen kid={kid} chosenChar={chosenChar} choiceId={choiceId} onEnd={handleBattleEnd} onBack={()=>setScreen("explore")}/>}
+      {screen==="ending"&&<EndingScreen scores={scores} heroicScores={heroicScores} onRestart={()=>{setScores({});setHeroicScores({});setChosenChar(null);setChoiceId(null);setKid(null);setScreen("title");}}/>}
+    </EB>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
