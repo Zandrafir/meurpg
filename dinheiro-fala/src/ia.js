@@ -25,13 +25,27 @@ export function iniciarIA(apiKey = config.geminiKey, modelo = config.geminiModel
   if (!apiKey) { cliente = null; return false; }
   const genAI = new GoogleGenerativeAI(apiKey);
   const mJson = genAI.getGenerativeModel({ model: modelo, generationConfig: { temperature: 0, responseMimeType: 'application/json' } });
-  const mTexto = genAI.getGenerativeModel({ model: modelo, generationConfig: { temperature: 0.9, maxOutputTokens: 400 } });
+  const mTexto = genAI.getGenerativeModel({ model: modelo, generationConfig: { temperature: 0.9, maxOutputTokens: 2048 } });
+  const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
   const chamar = async (m, prompt) => {
-    const r = await Promise.race([
-      m.generateContent(prompt),
-      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout Gemini')), TIMEOUT_MS)),
-    ]);
-    return r.response.text();
+    let ultimoErro;
+    for (let tentativa = 0; tentativa < 3; tentativa++) {
+      try {
+        const r = await Promise.race([
+          m.generateContent(prompt),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout Gemini')), TIMEOUT_MS)),
+        ]);
+        // resposta cortada (limite de tokens) é pior que nenhuma: descarta
+        if (r.response.candidates?.[0]?.finishReason === 'MAX_TOKENS') throw new Error('resposta cortada');
+        return r.response.text();
+      } catch (e) {
+        ultimoErro = e;
+        const temporario = /\b(429|500|502|503|504)\b|timeout|fetch failed/i.test(e.message);
+        if (!temporario || tentativa === 2) break;
+        await esperar(1500 * (tentativa + 1) ** 2);   // 1,5s, 6s
+      }
+    }
+    throw ultimoErro;
   };
   cliente = { json: (p) => chamar(mJson, p), texto: (p) => chamar(mTexto, p) };
   return true;

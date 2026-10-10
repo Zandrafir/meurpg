@@ -4,7 +4,7 @@ export function lerConfig(env = process.env) {
   const modoChat = (env.MODO_CHAT || 'self').toLowerCase();
   return {
     geminiKey: env.GEMINI_API_KEY || '',
-    geminiModel: env.GEMINI_MODEL || 'gemini-2.5-flash',
+    geminiModel: env.GEMINI_MODEL || 'gemini-flash-latest',
     webhookToken: env.WEBHOOK_TOKEN || '',
     meuNumero: (env.MEU_NUMERO || '').replace(/\D/g, ''),
     modoChat,

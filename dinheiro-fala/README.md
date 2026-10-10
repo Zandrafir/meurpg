@@ -45,7 +45,7 @@ npm start
 | Variável | O que é |
 |---|---|
 | `GEMINI_API_KEY` | chave do passo 2 (opcional, mas recomendado) |
-| `GEMINI_MODEL` | modelo flash; padrão `gemini-2.5-flash` |
+| `GEMINI_MODEL` | modelo flash; padrão `gemini-flash-latest` |
 | `WEBHOOK_TOKEN` | segredo que o celular manda no header `x-token`. Gere: `node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"` |
 | `MEU_NUMERO` | seu número com DDI+DDD, só dígitos (`5511999998888`) |
 | `MODO_CHAT` | `self` ou `dedicado` (veja abaixo) |
@@ -211,6 +211,15 @@ Token errado → `401`. Notificações repetidas (mesmo app+título+texto em 2 m
 7. Faça um Pix de teste (ou o botão de teste do MacroDroid) e confira `pm2 logs`.
 
 **Aspas no texto quebram o JSON.** Se uma notificação tiver `"` no texto, o JSON sai malformado e o webhook responde `400`. O webhook aceita também **formulário** (`application/x-www-form-urlencoded` com `app=…&titulo=…&texto=…`): use essa opção com as variáveis URL-encoded se isso acontecer (no Tasker, a ação *Variable Convert* tem a conversão *URL Encode*). O horário do `timestamp` é ignorado; o bot usa o relógio do servidor.
+
+## 8b. App Android "Caçador de Notificações" (alternativa ao Tasker)
+
+Em `android/` há um app simples que faz duas coisas: **guarda** as notificações dos seus bancos (para você me mandar os textos reais e eu ajustar o `config/apps.js`) e, se você quiser, **envia cada uma ao webhook** do bot, no lugar do Tasker/MacroDroid. Ele esconde CPF, CNPJ, e-mails e números longos nas capturas guardadas, e já usa o formato de formulário (não quebra com aspas no texto).
+
+- **Instalar:** baixe `apk/Cacador-de-Notificacoes.apk` (ou da aba Releases). O APK é assinado com chave de debug (uso pessoal).
+- **Gerar de novo:** o workflow `.github/workflows/android.yml` compila o APK no GitHub (aba Actions → "Gerar APK" → Run workflow) e publica em Releases. Localmente: `cd android && gradle assembleDebug` (precisa de JDK 17 e Android SDK).
+- **Atenção:** no Android 13+, apps instalados por arquivo precisam de "Permitir configurações restritas" (três pontinhos na Info do app) antes de ativar o acesso às notificações. O app tem um botão que leva até lá.
+- Passo a passo para leigos: veja `GUIA-PASSO-A-PASSO.md`.
 
 ## 9. Segurança e privacidade
 
