@@ -24,7 +24,7 @@ Ela só será colada num arquivo chamado `.env`, no computador do bot (Passo 5).
 4. **Se a opção estiver cinza/bloqueada** (acontece no Android 13+ com apps instalados por arquivo): volte ao app, toque em **"Se a opção estiver bloqueada: abrir Info do app"**, toque nos **três pontinhos (⋮)** no canto de cima e em **"Permitir configurações restritas"**. Depois repita o passo 3.
 5. Toque em **"Bateria: deixar sem restrição"** e escolha **"Não otimizar"** para o app. Sem isso o Android pode "matar" o app.
 6. Em celulares Xiaomi, Samsung, Motorola, etc., ative também "Início automático" e "Bloquear no multitarefa" para o app.
-7. Confira na tela do seu banco/Android que as **notificações mostram o valor** (não escondem o conteúdo na tela de bloqueio).
+7. **Importante:** com o celular bloqueado, o Android pode trocar o texto por "Conteúdo de notificação sensível oculto" (aconteceu no seu teste). Aí o bot não vê o valor e a compra se perde. Corrija em *Configurações → Notificações → Notificações na tela de bloqueio* (ou "Privacidade") e escolha **"Mostrar todo o conteúdo"**, e confira nos apps de banco se não há opção própria para esconder o valor.
 
 ## Se o Google Play Protect bloquear o app ("O app foi bloqueado para proteger seu dispositivo")
 No Brasil o Google bloqueia apps instalados por arquivo (APK) que pedem leitura de notificações, que é exatamente o que o Caçador faz. Não é defeito do app e **não vale a pena desligar a proteção**. Caminho que funciona:

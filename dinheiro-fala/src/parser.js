@@ -1,5 +1,5 @@
 // Extração de dados de notificações: regex primeiro, Gemini só como plano B.
-import { appPorPacote, PADROES_GENERICOS, IGNORAR } from '../config/apps.js';
+import { appPorPacote, PADROES_GENERICOS, IGNORAR, RECUSADAS } from '../config/apps.js';
 import { parseValor } from './util.js';
 import * as ia from './ia.js';
 import { log } from './log.js';
@@ -51,11 +51,13 @@ export function ehIgnoravel(titulo, texto) {
 /**
  * Pipeline completo. Retorna:
  *  { ignorar: true, motivo }  ou  { tipo, valor, contraparte, confianca, via, app }
- * Ordem: regex -> lista de ignorar -> Gemini -> (na dúvida) ignorar.
+ * Ordem: recusadas/estornos -> regex -> lista de ignorar -> Gemini -> (na dúvida) ignorar.
  */
 export async function interpretarNotificacao({ app: pacote, titulo, texto }, { usarIA = true } = {}) {
   const info = appPorPacote(pacote);
   if (!info) return { ignorar: true, motivo: 'app_desconhecido' };
+
+  if (RECUSADAS.some((rx) => rx.test(`${titulo ?? ''}\n${texto ?? ''}`))) return { ignorar: true, motivo: 'recusada' };
 
   const r = extrairPorRegex(pacote, titulo, texto);
   if (r) return { ...r, app: info.nome };

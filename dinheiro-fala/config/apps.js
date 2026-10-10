@@ -54,6 +54,18 @@ export const PADROES_GENERICOS = [
 ];
 
 // ---------------------------------------------------------------------------
+//  Operações que NÃO aconteceram (recusada, negada, estorno...). Têm prioridade sobre
+//  qualquer padrão: "Sua compra de R$ 10,00 em X não foi concluída" NÃO é um gasto.
+// ---------------------------------------------------------------------------
+export const RECUSADAS = [
+  /\bn[aã]o\s+(?:foi\s+)?(?:realizad|conclu[ií]d|aprovad|efetuad|autorizad|processad)[ao]/i,
+  /\b(?:recusad|negad|cancelad|estornad)[ao]\b/i,
+  /\bestorno\b/i,
+  /\bsaldo\s+insuficiente\b/i,
+  /\bverifique\s+se\s+h[aá]\s+saldo\b/i,
+];
+
+// ---------------------------------------------------------------------------
 //  Notificações que NÃO são movimentação (só vale se nada acima casar)
 // ---------------------------------------------------------------------------
 export const IGNORAR = [
@@ -75,6 +87,8 @@ export const APPS = [
     padroes: [
       p('pix_enviado', 'transferencia enviada.*?{V}.*?para {N}'),
       p('pix_recebido', 'recebeu uma transferencia de {N} no valor de {V}'),
+      p('debito', 'compra no debito aprovada.*?compra de {V} em {N}'),
+      p('compra_cartao', 'compra no credito aprovada.*?compra de {V} em {N}'),
       p('compra_cartao', 'compra de {V} aprovada em {N}'),
       p('boleto', 'pagamento.*?{V}.*?boleto.*?efetuado'),
     ],
@@ -165,6 +179,8 @@ export const APPS = [
     pacote: 'com.google.android.apps.walletnfcrel',
     // Carteira Google: sempre compra no cartão. Título costuma ser "R$ 45,90 em ESTABELECIMENTO".
     padroes: [
+      // formato real: título = estabelecimento; texto = "R$ 20,00 com Nubank Mastercard Gold ••1234"
+      p('compra_cartao', '^{N}\\n{V} com'),
       p('compra_cartao', '^\\s*{V} (?:em|no|na) {N}'),
       p('compra_cartao', 'pagamento (?:de )?{V} (?:em|no|na) {N}'),
     ],

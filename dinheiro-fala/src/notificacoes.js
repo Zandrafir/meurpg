@@ -9,7 +9,7 @@ import * as ia from './ia.js';
 import { calcularSobra } from './resumos.js';
 import { enviar } from './saida.js';
 import { log } from './log.js';
-import { agoraLocal, fmtBRL } from './util.js';
+import { agoraLocal, agora, fmtBRL } from './util.js';
 
 export const JANELA_DEDUP_MS = 2 * 60 * 1000;
 const ROTULO = {
@@ -45,6 +45,21 @@ export async function decidirCategoria(texto) {
   return g || { categoria: 'outros', confianca: 0 };
 }
 
+/**
+ * A mesma compra costuma gerar DUAS notificações: a do banco e a da Carteira Google.
+ * Se já existe compra de mesmo valor, de OUTRO app, nos últimos 10 min e com nome parecido,
+ * é a mesma compra. (Dois apps iguais seguidos não entram aqui: esses são tratados pelo hash de 2 min.)
+ */
+function compraJaRegistrada(r) {
+  if (!['compra_cartao', 'debito'].includes(r.tipo)) return null;
+  const desde = agoraLocal(new Date(agora().getTime() - 10 * 60 * 1000)).iso;
+  const candidatas = db().prepare(`SELECT * FROM transacoes WHERE valor = ? AND tipo IN ('compra_cartao','debito')
+    AND COALESCE(origem_app,'') != ? AND data >= ? ORDER BY id DESC`).all(r.valor, r.app, desde);
+  return candidatas.find((t) => !r.contraparte || !t.contraparte
+    || contas.similaridade(t.contraparte, r.contraparte) >= 0.5
+    || contas.similaridade(r.contraparte, t.contraparte) >= 0.5) || null;
+}
+
 async function perguntar(texto, dadosPergunta) {
   const msgId = await enviar(texto);
   perguntas.criar({ ...dadosPergunta, msgId });
@@ -66,6 +81,13 @@ export async function processarNotificacao(body, { agoraMs = Date.now() } = {}) 
     return { status: 'ignorada', motivo: r.motivo };
   }
   log.info(`Notificação: ${r.tipo} ${fmtBRL(r.valor)} via ${r.via} (${r.app})`);
+
+  const repetida = compraJaRegistrada(r);
+  if (repetida) {
+    if (r.contraparte && r.contraparte.length > (repetida.contraparte || '').length) tx.atualizar(repetida.id, { contraparte: r.contraparte });
+    log.info(`Compra já registrada por outro app (${repetida.origem_app}); descartada.`);
+    return { status: 'duplicada_entre_apps', id: repetida.id };
+  }
 
   const hoje = agoraLocal(new Date(agoraMs));
   const base = { tipo: r.tipo, valor: r.valor, contraparte: r.contraparte, origemApp: r.app, hash };
