@@ -26,6 +26,11 @@ Ela só será colada num arquivo chamado `.env`, no computador do bot (Passo 5).
 6. Em celulares Xiaomi, Samsung, Motorola, etc., ative também "Início automático" e "Bloquear no multitarefa" para o app.
 7. Confira na tela do seu banco/Android que as **notificações mostram o valor** (não escondem o conteúdo na tela de bloqueio).
 
+## Se o Google Play Protect bloquear o app ("O app foi bloqueado para proteger seu dispositivo")
+No Brasil o Google bloqueia apps instalados por arquivo (APK) que pedem leitura de notificações, que é exatamente o que o Caçador faz. Não é defeito do app e **não vale a pena desligar a proteção**. Caminho que funciona:
+- **Para eu aprender o texto dos seus bancos:** tire **prints das notificações** (Configurações → Notificações → **Histórico de notificações**, ou puxe a barra de notificações logo depois de uma operação) e cole aqui. Pode cobrir nomes/CPF; o que importa é a frase e o valor. 3 ou 4 prints por banco bastam.
+- **Para enviar as notificações ao bot:** use o **MacroDroid** ou o **Tasker**, instalados pela **Play Store** (aí não há bloqueio). O bot já aceita os dois (README, seção 8).
+
 ## Passo 3: coletar os textos reais dos bancos (para você me mandar)
 1. Deixe o app instalado alguns dias, **ou** faça pequenas operações de teste (um Pix de R$ 1,00 para você mesmo, uma compra pequena no cartão).
 2. Abra o app: as notificações aparecem na lista ("4. Capturas"). CPF, CNPJ, e-mails e números longos já saem escondidos.

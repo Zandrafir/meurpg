@@ -216,6 +216,7 @@ Token errado → `401`. Notificações repetidas (mesmo app+título+texto em 2 m
 
 Em `android/` há um app simples que faz duas coisas: **guarda** as notificações dos seus bancos (para você me mandar os textos reais e eu ajustar o `config/apps.js`) e, se você quiser, **envia cada uma ao webhook** do bot, no lugar do Tasker/MacroDroid. Ele esconde CPF, CNPJ, e-mails e números longos nas capturas guardadas, e já usa o formato de formulário (não quebra com aspas no texto).
 
+- **Limitação no Brasil:** o Google Play Protect bloqueia a instalação de APKs fora da Play Store que pedem leitura de notificações, então este app pode ser barrado (aconteceu no teste real). O caminho garantido é MacroDroid/Tasker pela Play Store (seção 8). O app serve para quem conseguir instalá-lo (por exemplo, via ADB pelo computador, não testado).
 - **Instalar:** baixe `apk/Cacador-de-Notificacoes.apk` (ou da aba Releases). O APK é assinado com chave de debug (uso pessoal).
 - **Gerar de novo:** o workflow `.github/workflows/android.yml` compila o APK no GitHub (aba Actions → "Gerar APK" → Run workflow) e publica em Releases. Localmente: `cd android && gradle assembleDebug` (precisa de JDK 17 e Android SDK).
 - **Atenção:** no Android 13+, apps instalados por arquivo precisam de "Permitir configurações restritas" (três pontinhos na Info do app) antes de ativar o acesso às notificações. O app tem um botão que leva até lá.
