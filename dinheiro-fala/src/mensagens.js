@@ -7,6 +7,7 @@ import * as perguntas from './perguntas.js';
 import * as ia from './ia.js';
 import { calcularSobra, resumoAtual, nomeMes } from './resumos.js';
 import { avisoGasto, decidirCategoria } from './notificacoes.js';
+import * as capturas from './capturas.js';
 import { enviar } from './saida.js';
 import { agoraLocal, parseValor, fmtBRL, fmtDataCurta, normalizar } from './util.js';
 
@@ -16,6 +17,8 @@ const PREP = String.raw`(?:(?:no|na|em|de|do|da|dos|das|com|pra|para|num|numa|n[
 const RE = {
   ajuda: /^(ajuda|help|menu|comandos|\?)$/i,
   resumo: /^resumo$/i,
+  capturas: /^(?:capturas|exportar(?:\s+capturas)?|notifica[çc][õo]es\s+n[aã]o\s+entendidas)$/i,
+  limparCapturas: /^(?:limpar|apagar)\s+capturas$/i,
   minhasContas: /^(minhas contas|contas fixas|contas|lista de contas|ver contas)$/i,
   paguei: /^paguei\s+(?!(?:r\$\s*)?\d)(.+)$/i,
   editar: new RegExp(String.raw`^editar\s+(?:conta\s+)?(.+?)(?:\s+${VAL})?(?:\s+dia\s+(\d{1,2}))?$`, 'i'),
@@ -46,6 +49,7 @@ export const TEXTO_AJUDA = `*O que eu sei fazer* 💸
 • *minhas contas* · *editar luz 200 dia 12* · *remover luz*
 • *paguei luz* (dou baixa na conta)
 • *resumo* (contas + movimentação do mês)
+• *capturas* (notificações que eu não entendi, pra você mandar ao Claude) · *limpar capturas*
 • *renda 5000* (pra eu estimar o que sobra)
 • *orçamento mercado 800* · *orçamentos* · *remover orçamento mercado*
 Quando eu perguntar "foi pra quê?" sobre um Pix, é só responder (ou *pula*).`;
@@ -285,6 +289,11 @@ async function tentarComando(t, hoje) {
   let m;
   if (RE.ajuda.test(t)) return TEXTO_AJUDA;
   if (RE.resumo.test(t)) return resumoAtual(hoje);
+  if (RE.limparCapturas.test(t)) return `Apaguei ${capturas.limpar()} captura(s) 🗑️`;
+  if (RE.capturas.test(t)) {
+    if (!capturas.contar()) return 'Não tenho nenhuma notificação pendente de aprender. Tudo que chegou eu entendi 👌';
+    return `Copie o texto abaixo e cole na conversa com o Claude para ele ajustar meus padrões (CPF e números longos já estão escondidos):\n\n${capturas.exportarJson()}\n\nDepois de enviar, mande *limpar capturas*.`;
+  }
   if (RE.minhasContas.test(t)) return contas.textoMinhasContas(hoje);
   if (contas.pareceCadastro(t)) return cmdCadastro(t, hoje);
   if ((m = RE.orcamentoRemover.exec(t))) {

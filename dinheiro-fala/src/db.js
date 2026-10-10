@@ -65,6 +65,15 @@ CREATE TABLE IF NOT EXISTS config (
   valor TEXT
 );
 
+CREATE TABLE IF NOT EXISTS capturas (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  app TEXT NOT NULL,
+  titulo TEXT,
+  texto TEXT,
+  motivo TEXT,                              -- app_desconhecido | regex_falhou | so_ia
+  criada_ms INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS notificacoes_vistas (
   hash TEXT PRIMARY KEY,
   visto_ms INTEGER NOT NULL

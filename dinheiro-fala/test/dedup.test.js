@@ -63,6 +63,9 @@ test('compra recusada/não concluída NÃO vira gasto', async () => {
   const r1 = await processarNotificacao({ app: NU, titulo: 'Compra no débito não realizada', texto: 'Sua compra de R$ 10,00 em TERRA DOS não foi concluída, verifique se há saldo suficiente.' });
   const r2 = await processarNotificacao({ app: 'com.google.android.apps.walletnfcrel', titulo: 'TERRA DOS', texto: 'RECUSADA: R$ 10,00 com Nubank Mastercard Gold ••0000' });
   assert.equal(r1.motivo, 'recusada'); assert.equal(r2.motivo, 'recusada');
-  assert.equal(db().prepare('SELECT COUNT(*) n FROM transacoes').get().n, 0);
-  assert.equal(enviadas.length, 0);
+  assert.equal(db().prepare('SELECT COUNT(*) n FROM transacoes').get().n, 0);   // nunca vira gasto
+  assert.equal(enviadas.length, 1);                                               // banco + Carteira = 1 aviso só
+  assert.match(enviadas[0].texto, /R\$ 10,00/);
+  assert.match(enviadas[0].texto, /TERRA DOS/);
+  assert.match(enviadas[0].texto, /recus/i);
 });

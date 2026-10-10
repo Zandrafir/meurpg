@@ -78,6 +78,7 @@ npm start
 | `resumo` | contas (pago / falta / atrasadas / próximos) + entradas e saídas do mês |
 | `renda 5000` | informa a renda (usada em "quanto sobra" e no saldo estimado) |
 | `orçamento mercado 800` · `orçamentos` · `remover orçamento mercado` | avisa aos 80% e aos 100% (uma vez por mês cada) |
+| `capturas` · `limpar capturas` | devolve as notificações que o bot não entendeu (mascaradas) para você mandar ao Claude ajustar `config/apps.js` |
 | `ajuda` | lista tudo |
 
 **Quanto sobra** = renda (ou, sem renda, as entradas do mês) − gastos do mês − contas fixas ainda em aberto. A resposta sempre mostra a conta.
@@ -121,6 +122,8 @@ Ordem de decisão: padrões do banco → padrões genéricos → lista `IGNORAR`
 Os pacotes (Nubank `com.nu.production`, Itaú `com.itau`, etc.) estão na tabela de `config/apps.js`; confirme o seu em *Configurações → Apps → Info do app*.
 
 ## 6. Subindo num servidor 24h
+
+> **Atalho:** num Ubuntu/Debian (ex.: Oracle Free Tier), `bash scripts/instalar-servidor.sh` faz tudo: instala Node e pm2, pergunta Gemini/número/modo, mostra o QR do WhatsApp, deixa 24h no pm2 e abre um endereço HTTPS público via Tailscale Funnel. As partes de rede (Tailscale/WhatsApp) não foram testadas fora do desenvolvimento. O passo a passo manual segue abaixo.
 
 ### Oracle Cloud Free Tier (grátis para sempre)
 

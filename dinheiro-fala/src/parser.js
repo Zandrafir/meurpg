@@ -43,6 +43,17 @@ export function extrairPorRegex(pacote, titulo, texto) {
   return null;
 }
 
+/** Valor e local de uma compra recusada (só para avisar; nunca vira gasto). */
+export function extrairRecusada(titulo, texto) {
+  const alvo = normalizarTexto(`${titulo ?? ''}\n${texto ?? ''}`);
+  const v = /R\$\s*(\d{1,3}(?:\.\d{3})+(?:,\d{2})?|\d+(?:,\d{2})?)/.exec(alvo);
+  const valor = v ? parseValor(v[1]) : null;
+  let contraparte = limparContraparte(/\bem\s+([^\n]+?)(?:\s+n[aã]o\b|\.|\n|$)/i.exec(alvo)?.[1]);
+  const t = normalizarTexto(titulo);
+  if (!contraparte && t && t.length <= 40 && !/\d|recusad|negad|n[aã]o/i.test(t)) contraparte = limparContraparte(t);
+  return { valor, contraparte };
+}
+
 export function ehIgnoravel(titulo, texto) {
   const alvo = `${titulo ?? ''}\n${texto ?? ''}`;
   return IGNORAR.some((r) => r.test(alvo));
@@ -57,7 +68,9 @@ export async function interpretarNotificacao({ app: pacote, titulo, texto }, { u
   const info = appPorPacote(pacote);
   if (!info) return { ignorar: true, motivo: 'app_desconhecido' };
 
-  if (RECUSADAS.some((rx) => rx.test(`${titulo ?? ''}\n${texto ?? ''}`))) return { ignorar: true, motivo: 'recusada' };
+  if (RECUSADAS.some((rx) => rx.test(`${titulo ?? ''}\n${texto ?? ''}`))) {
+    return { ignorar: true, motivo: 'recusada', ...extrairRecusada(titulo, texto) };
+  }
 
   const r = extrairPorRegex(pacote, titulo, texto);
   if (r) return { ...r, app: info.nome };

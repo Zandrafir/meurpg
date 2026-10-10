@@ -7,6 +7,8 @@ import * as contas from './contas.js';
 import * as perguntas from './perguntas.js';
 import * as ia from './ia.js';
 import { calcularSobra } from './resumos.js';
+import * as capturas from './capturas.js';
+import { getConfig, setConfig } from './db.js';
 import { enviar } from './saida.js';
 import { log } from './log.js';
 import { agoraLocal, agora, fmtBRL } from './util.js';
@@ -78,8 +80,14 @@ export async function processarNotificacao(body, { agoraMs = Date.now() } = {}) 
   const r = await interpretarNotificacao(n);
   if (r.ignorar) {
     log.info(`Notificação ignorada (${r.motivo}).`);   // sem o texto, por privacidade
+    if (r.motivo === 'recusada') return avisarRecusa(r, agoraMs);
+    if (['app_desconhecido', 'regex_falhou'].includes(r.motivo) && /R\$\s*\d/.test(`${n.titulo} ${n.texto}`)) {
+      capturas.salvar({ app: n.app, titulo: n.titulo, texto: n.texto, motivo: r.motivo }, agoraMs);
+    }
     return { status: 'ignorada', motivo: r.motivo };
   }
+  // o regex não pegou, mas o Gemini entendeu: registra e guarda p/ aprendermos o padrão
+  if (r.via === 'ia') capturas.salvar({ app: n.app, titulo: n.titulo, texto: n.texto, motivo: 'so_ia' }, agoraMs);
   log.info(`Notificação: ${r.tipo} ${fmtBRL(r.valor)} via ${r.via} (${r.app})`);
 
   const repetida = compraJaRegistrada(r);
@@ -155,6 +163,23 @@ export async function processarNotificacao(body, { agoraMs = Date.now() } = {}) 
   const alerta = tx.verificarOrcamento(cat.categoria, hoje.ano, hoje.mes);
   await enviar(alerta ? `${msg}\n\n${alerta}` : msg);
   return { status: 'registrada', id, categoria: cat.categoria, mensagem: msg, alerta };
+}
+
+/** Compra recusada: não registra gasto, só avisa (uma vez, mesmo que banco e Carteira avisem). */
+async function avisarRecusa(r, agoraMs) {
+  if (!r.valor) return { status: 'ignorada', motivo: 'recusada' };
+  const chave = `${r.valor}`;
+  const [v, ms] = String(getConfig('ultima_recusa', '0|0')).split('|');
+  if (v === chave && agoraMs - Number(ms) < 10 * 60 * 1000) return { status: 'ignorada', motivo: 'recusada' };
+  setConfig('ultima_recusa', `${chave}|${agoraMs}`);
+  const onde = r.contraparte ? ` em ${r.contraparte}` : '';
+  const fallback = `Tentaram passar ${fmtBRL(r.valor)}${onde}, mas o cartão recusou (provavelmente sem limite ou saldo) 😬 Não anotei como gasto.`;
+  const msg = await ia.voz({
+    situacao: 'Uma compra no cartão foi RECUSADA (provavelmente por falta de limite/saldo). Avise com humor que NÃO foi registrada como gasto.',
+    valores: { valor: r.valor }, obrigatorios: ['valor'], extras: { estabelecimento: r.contraparte || '(não informado)' }, fallback,
+  });
+  await enviar(msg);
+  return { status: 'ignorada', motivo: 'recusada', aviso: msg };
 }
 
 /** Mensagem "saiu X em Y" na voz do dinheiro (usada também para gastos digitados). */

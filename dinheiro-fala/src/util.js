@@ -83,3 +83,12 @@ export function maiusculaInicial(s) {
   s = String(s ?? '');
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
+
+/** Esconde CPF, CNPJ, e-mail e números longos (valores em R$ são preservados). */
+export function mascarar(s) {
+  return String(s ?? '')
+    .replace(/\b\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}\b/g, '**.***.***/****-**')
+    .replace(/\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/g, '***.***.***-**')
+    .replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, '***@***')
+    .replace(/(?<![\d.,])\d{8,}(?!\d|,\d{2})/g, '********');
+}

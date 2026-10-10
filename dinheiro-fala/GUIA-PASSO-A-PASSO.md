@@ -40,16 +40,46 @@ No Brasil o Google bloqueia apps instalados por arquivo (APK) que pedem leitura 
 
 Antes de colar, dê uma olhada: se tiver algum dado seu que você não queira expor (nome de pessoa, por exemplo), pode trocar por "FULANO". O que importa é o formato da frase.
 
-## Passo 4: o bot precisa ficar ligado 24h
-Escolha **uma** opção:
-- **Recomendado: Oracle Cloud Free Tier** (computador grátis na internet). É o mais estável. O passo a passo está no `README.md`, seção 6. **Eu te guio, comando por comando, aqui na conversa.**
-- Um computador seu que fique ligado sempre (ou um Raspberry Pi).
+## Passo 4: o computador que fica ligado 24h (Oracle Cloud, grátis)
+1. Acesse **https://www.oracle.com/br/cloud/free/** → **Comece gratuitamente**. Pede cartão só para confirmar identidade; os recursos "Always Free" não cobram.
+2. No painel: **Compute → Instances → Create instance**.
+   - Image: **Canonical Ubuntu 22.04**.
+   - Shape: **VM.Standard.E2.1.Micro** (Always Free). Se existir a opção Ampere A1 grátis e estiver disponível, também serve.
+   - Em "Add SSH keys" clique em **Generate a key pair** e **baixe a chave privada** (guarde bem, é a "chave da porta").
+   - Não precisa abrir porta nenhuma.
+3. Quando a máquina ficar **Running**, copie o **Public IP**.
+4. Conecte nela por SSH. **Esta parte eu te guio na conversa**: me diga se você usa Windows, Mac ou só o celular, e eu passo o comando exato.
+5. Já dentro do servidor, traga o projeto e rode o instalador:
+   ```
+   git clone https://github.com/SEU_USUARIO/dinheiro-fala.git
+   cd dinheiro-fala
+   bash scripts/instalar-servidor.sh
+   ```
+   (Se o repositório for privado, o `git clone` pede usuário e um *token* do GitHub. Eu te explico na hora.)
 
-## Passo 5: ligar tudo
-1. No computador do bot, copie o arquivo `.env.example` para `.env` e preencha: `GEMINI_API_KEY` (Passo 1), `WEBHOOK_TOKEN` (uma senha inventada, grande), `MEU_NUMERO` (seu número com 55 + DDD, só números) e `MODO_CHAT`.
-2. Ligue o bot, escaneie o QR Code com o WhatsApp (README seção 3) e mande `ajuda`.
-3. No app do celular, na parte **"3. Enviar para o bot"**, cole o endereço do seu bot (termina em `/notificacao`) e o mesmo token, marque **"Enviar cada notificação de banco para o bot"** e toque em **"Testar conexão"**. Tem que aparecer "Conexão e token OK".
-4. Pronto: a próxima compra no cartão já vira mensagem no WhatsApp.
+## Passo 5: ligar tudo (o instalador faz quase sozinho)
+O comando acima pergunta 3 coisas: **chave do Gemini**, **seu número** (`55` + DDD + número) e o **modo** (escolha `1`, dedicado). Depois ele:
+1. instala o que precisa;
+2. mostra um **QR Code**: no celular com o WhatsApp do bot, vá em *Configurações → Aparelhos conectados → Conectar um aparelho* e aponte a câmera;
+3. deixa o bot **ligado 24h** (volta sozinho se o servidor reiniciar);
+4. cria um **endereço público seguro** (Tailscale Funnel, grátis; ele abre um link para você entrar/criar a conta Tailscale e autorizar);
+5. no final imprime o **endereço** e o **token** que vão no celular.
+
+Teste: mande **`ajuda`** para o bot no WhatsApp.
+
+## Passo 6: o celular manda as notificações (MacroDroid, pela Play Store)
+1. Instale o **MacroDroid** na **Play Store** e dê a permissão de **Acesso às notificações** a ele.
+2. Crie uma macro:
+   - **Gatilho:** *Notificação recebida* → escolha só os apps: Nubank, Carteira Google (e outros bancos que usa).
+   - **Ação:** *Requisição HTTP* → método **POST** → URL = o **endereço** que o instalador mostrou (termina em `/notificacao`).
+   - **Cabeçalho:** `x-token` com o **token** do instalador.
+   - **Tipo de conteúdo:** `application/json`
+   - **Corpo:** `{"app":"{notification_package}","titulo":"{notification_title}","texto":"{notification}"}`
+3. Bateria: deixe o MacroDroid em **Sem restrições** e ative "Início automático".
+4. Faça uma compra pequena e veja a mensagem chegar no WhatsApp.
+
+## Quando uma notificação não for entendida (o bot continua aprendendo)
+O bot guarda sozinho as notificações que ele não conseguiu ler (com CPF e números longos escondidos). Quando quiser, mande **`capturas`** para ele no WhatsApp: ele devolve um texto. **Cole esse texto aqui comigo** e eu ajusto o leitor. Depois mande **`limpar capturas`**. Se uma compra for **recusada** (sem limite), ele só avisa e **não** conta como gasto.
 
 ## Perguntas rápidas
 
